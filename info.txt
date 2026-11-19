@@ -1,0 +1,12 @@
+# ==========================================
+# AEİK Veb Saytı və Şəxsi Kabinet - Mühit Dəyişənləri
+# ==========================================
+
+# 1. MONGODB DATABASE ƏLAQƏSİ
+MONGODB_URI=mongodb+srv://aeik_admin:YOUR_PASSWORD@cluster0.mongodb.net/aeik_database?retryWrites=true&w=majority
+
+# 2. JWT TOKEN ŞİFRƏLƏMƏ AÇARI (Auth üçün)
+JWT_SECRET=aeik_super_secret_jwt_key_2026_elm_innovasiya_token
+
+# 3. SAYTIN ƏSAS DOMENİ
+NEXT_PUBLIC_APP_URL=http://localhost:3000
