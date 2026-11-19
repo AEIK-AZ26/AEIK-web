@@ -16,10 +16,19 @@ export function signToken(payload: { userId: string; email: string; role: string
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
 }
 
-export function verifyToken(token: string): { userId: string; email: string; role: string } | null {
+export function verifyToken(token: string): { userId: string; email: string; role: 'owner' | 'admin' | 'member' } | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: string };
+    return jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: 'owner' | 'admin' | 'member' };
   } catch (err) {
     return null;
   }
+}
+
+export function getUserFromRequest(req: Request): { userId: string; email: string; role: 'owner' | 'admin' | 'member' } | null {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  const token = authHeader.split(' ')[1];
+  return verifyToken(token);
 }

@@ -16,23 +16,10 @@ export async function POST(req: Request) {
 
     const conn = await connectToDatabase();
     if (!conn) {
-      // Return demo mode response if DB not yet connected
-      const demoToken = signToken({
-        userId: 'demo_' + Date.now(),
-        email,
-        role: 'member',
-      });
-      return NextResponse.json({
-        user: {
-          uid: 'demo_' + Date.now(),
-          email,
-          displayName,
-          department: department || 'Layihələrin idarə olunması',
-          role: 'member',
-        },
-        token: demoToken,
-        isDemo: true,
-      });
+      return NextResponse.json(
+        { error: 'Verilənlər bazasına qoşulmaq mümkün olmadı.' },
+        { status: 503 }
+      );
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -45,8 +32,8 @@ export async function POST(req: Request) {
 
     const hashedPassword = await hashPassword(password);
     const count = await User.countDocuments();
-    // First user is automatically admin, others are member
-    const role = count === 0 ? 'admin' : 'member';
+    // İlk istifadəçi avtomatik 'owner' olur, növbətilər isə 'member'
+    const role: 'owner' | 'admin' | 'member' = count === 0 ? 'owner' : 'member';
 
     const newUser = await User.create({
       email: email.toLowerCase(),

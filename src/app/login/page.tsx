@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, ArrowRight, ShieldCheck, UserCheck, AlertCircle } from "lucide-react";
+import { Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,30 +39,10 @@ export default function LoginPage() {
       router.push("/kabinet");
     } catch (err: any) {
       console.error("Login fetch error:", err);
-      // Fallback
-      const isAdmin = email.toLowerCase().includes("admin");
-      const profile = {
-        uid: "local_" + Date.now(),
-        email: email || "uzv@aeik.az",
-        displayName: email ? email.split("@")[0] : "İdarə Heyəti Üzvü",
-        role: isAdmin ? "admin" : "member",
-        department: "Layihələrin idarə olunması",
-      };
-      localStorage.setItem("aeik_user", JSON.stringify(profile));
-      router.push("/kabinet");
+      setError("Serverlə əlaqə qurulmadı. Zəhmət olmasa interneti və ya bazanı yoxlayın.");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const quickDemoLogin = (role: 'admin' | 'member') => {
-    const profile = {
-      uid: role === 'admin' ? "admin_aeik" : "member_aeik",
-      email: role === 'admin' ? "admin@aeik.az" : "uzv@aeik.az",
-      displayName: role === 'admin' ? "Nərhiz Hacıllı (Admin)" : "Cavid Quluyev (Üzv)",
-      role: role,
-      department: role === 'admin' ? "İdarə Heyəti Sədri" : "Layihələrin idarə olunması"
-    };
-    localStorage.setItem("aeik_user", JSON.stringify(profile));
-    router.push("/kabinet");
   };
 
   return (
@@ -143,31 +123,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick Demo Test Buttons */}
-        <div className="mt-6 pt-6 border-t border-slate-100">
-          <p className="text-center text-xs text-slate-500 mb-3 font-medium">
-            Sürətli Test Girişi (1 kliklə):
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => quickDemoLogin('admin')}
-              className="px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-brand-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <ShieldCheck size={15} />
-              <span>Admin Kimi</span>
-            </button>
-            <button
-              onClick={() => quickDemoLogin('member')}
-              className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <UserCheck size={15} />
-              <span>Üzv Kimi</span>
-            </button>
-          </div>
-        </div>
-
         {/* Register Link */}
-        <div className="mt-6 text-center text-xs text-slate-600">
+        <div className="mt-8 text-center text-xs text-slate-600">
           Hesabınız yoxdur?{" "}
           <Link href="/register" className="text-brand-600 font-bold hover:underline">
             Qeydiyyatdan keçin

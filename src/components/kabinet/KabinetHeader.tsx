@@ -10,24 +10,25 @@ import {
   ShieldCheck, 
   Database,
   CheckCircle2,
-  Server
+  Users,
+  Crown,
+  UserCheck
 } from "lucide-react";
+import { UserRole } from "@/types";
 
 interface KabinetHeaderProps {
   currentUser: {
     displayName: string;
     email: string;
-    role: 'admin' | 'member';
+    role: UserRole;
     department: string;
   };
   isMongoConnected?: boolean;
-  onRoleToggle: () => void;
 }
 
 export default function KabinetHeader({ 
   currentUser, 
   isMongoConnected = false,
-  onRoleToggle 
 }: KabinetHeaderProps) {
   const router = useRouter();
 
@@ -36,6 +37,34 @@ export default function KabinetHeader({
     localStorage.removeItem("aeik_token");
     router.push("/login");
   };
+
+  const getRoleBadge = (role: UserRole) => {
+    switch (role) {
+      case "owner":
+        return (
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-xs">
+            <Crown size={14} />
+            <span>Owner</span>
+          </span>
+        );
+      case "admin":
+        return (
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-600 text-white shadow-xs">
+            <ShieldCheck size={14} />
+            <span>Admin</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+            <UserCheck size={14} />
+            <span>Üzv</span>
+          </span>
+        );
+    }
+  };
+
+  const canManageUsers = currentUser.role === "owner" || currentUser.role === "admin";
 
   return (
     <header className="bg-white border-b border-purple-100/80 sticky top-0 z-40 shadow-xs">
@@ -66,7 +95,7 @@ export default function KabinetHeader({
         <div className="flex items-center gap-3 ml-auto">
           {/* Storage / MongoDB Status */}
           <div 
-            title={isMongoConnected ? "MongoDB Atlas Aktiv Əlaqə" : ".env faylında MONGODB_URI qeyd edildikdə avtomatik aktivləşir"}
+            title={isMongoConnected ? "MongoDB Atlas Aktiv Əlaqə" : "Məlumatlar lokal olaraq saxlanılır"}
             className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
               isMongoConnected 
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200" 
@@ -78,19 +107,19 @@ export default function KabinetHeader({
             <CheckCircle2 size={13} className={isMongoConnected ? "text-emerald-500" : "text-brand-500"} />
           </div>
 
-          {/* Role switch pill */}
-          <button
-            onClick={onRoleToggle}
-            title="Rolu dəyişmək üçün klikləyin"
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-              currentUser.role === 'admin'
-                ? "bg-brand-600 text-white shadow-xs"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-          >
-            <ShieldCheck size={14} />
-            <span>{currentUser.role === 'admin' ? "Admin" : "Üzv"}</span>
-          </button>
+          {/* User Management link (Owner & Admin only) */}
+          {canManageUsers && (
+            <Link
+              href="/kabinet/users"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 hover:bg-purple-100 text-brand-700 border border-purple-200 transition-colors"
+            >
+              <Users size={14} />
+              <span>İstifadəçilər</span>
+            </Link>
+          )}
+
+          {/* Real Role badge */}
+          {getRoleBadge(currentUser.role)}
 
           {/* User profile capsule */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-2xl border border-slate-200/80">
@@ -98,31 +127,32 @@ export default function KabinetHeader({
               {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : "U"}
             </div>
             <div className="text-left hidden lg:block">
-              <div className="text-xs font-semibold text-slate-800 leading-none">
+              <p className="text-xs font-bold text-slate-800 leading-none">
                 {currentUser.displayName}
-              </div>
-              <div className="text-[10px] text-slate-500 leading-none mt-1">
+              </p>
+              <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
                 {currentUser.department}
-              </div>
+              </p>
             </div>
           </div>
 
-          {/* Website link */}
+          {/* Public site link */}
           <Link
             href="/"
-            title="Əsas veb saytı aç"
-            className="p-2 rounded-xl text-slate-600 hover:text-brand-600 hover:bg-purple-50 transition-colors"
+            target="_blank"
+            className="p-2 rounded-xl text-slate-500 hover:text-brand-600 hover:bg-purple-50 transition-colors"
+            title="Əsas saytı yeni tabda aç"
           >
-            <ExternalLink size={18} />
+            <ExternalLink size={17} />
           </Link>
 
           {/* Logout */}
           <button
             onClick={handleLogout}
-            title="Çıxış et"
-            className="p-2 rounded-xl text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-2 rounded-xl text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+            title="Çıxış"
           >
-            <LogOut size={18} />
+            <LogOut size={17} />
           </button>
         </div>
       </div>

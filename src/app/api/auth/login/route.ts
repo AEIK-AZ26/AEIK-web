@@ -16,38 +16,24 @@ export async function POST(req: Request) {
 
     const conn = await connectToDatabase();
     if (!conn) {
-      // Demo mode fallback if DB not yet configured
-      const isAdmin = email.toLowerCase().includes('admin');
-      const demoToken = signToken({
-        userId: 'demo_' + (isAdmin ? 'admin' : 'member'),
-        email,
-        role: isAdmin ? 'admin' : 'member',
-      });
-      return NextResponse.json({
-        user: {
-          uid: 'demo_' + (isAdmin ? 'admin' : 'member'),
-          email,
-          displayName: isAdmin ? 'Nərhiz Hacıllı (Admin)' : email.split('@')[0],
-          department: isAdmin ? 'İdarə Heyəti Sədri' : 'Layihələrin idarə olunması',
-          role: isAdmin ? 'admin' : 'member',
-        },
-        token: demoToken,
-        isDemo: true,
-      });
+      return NextResponse.json(
+        { error: 'Verilənlər bazasına qoşulmaq mümkün olmadı. Zəhmət olmasa bir az sonra yenidən cəhd edin.' },
+        { status: 503 }
+      );
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return NextResponse.json(
-        { error: 'Bu email ilə qeydiyyatdan keçmiş istifadəçi tapılmadı.' },
-        { status: 404 }
+        { error: 'Email və ya şifrə yanlışdır.' },
+        { status: 401 }
       );
     }
 
     const isValid = await verifyPassword(password, user.password);
     if (!isValid) {
       return NextResponse.json(
-        { error: 'Daxil edilən şifrə yanlışdır.' },
+        { error: 'Email və ya şifrə yanlışdır.' },
         { status: 401 }
       );
     }

@@ -40,7 +40,8 @@ import {
   ResultItem, 
   MeetingItem, 
   TaskItem, 
-  NoteItem 
+  NoteItem,
+  UserRole
 } from "@/types";
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -78,7 +79,7 @@ export default function KabinetPage() {
   const [currentUser, setCurrentUser] = useState<{
     displayName: string;
     email: string;
-    role: "admin" | "member";
+    role: UserRole;
     department: string;
   } | null>(null);
 
@@ -120,14 +121,7 @@ export default function KabinetPage() {
     );
   }
 
-  const isAdmin = currentUser.role === "admin";
-
-  const handleRoleToggle = () => {
-    const nextRole: "admin" | "member" = currentUser.role === "admin" ? "member" : "admin";
-    const updated = { ...currentUser, role: nextRole };
-    setCurrentUser(updated);
-    localStorage.setItem("aeik_user", JSON.stringify(updated));
-  };
+  const isAdmin = currentUser.role === "admin" || currentUser.role === "owner";
 
   // State mutation helper
   const updateState = (updater: (prev: AppState) => AppState) => {
@@ -301,7 +295,6 @@ export default function KabinetPage() {
       <KabinetHeader
         currentUser={currentUser}
         isMongoConnected={isMongoConnected}
-        onRoleToggle={handleRoleToggle}
       />
 
       {/* Main Tab Navigation Bar */}

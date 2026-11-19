@@ -1,10 +1,13 @@
+export type UserRole = 'owner' | 'admin' | 'member';
+
 export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
   department: string;
-  role: 'admin' | 'member';
+  role: UserRole;
   photoURL?: string;
+  createdAt?: number;
 }
 
 export interface Member {

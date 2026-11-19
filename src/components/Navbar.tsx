@@ -23,7 +23,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-44 sm:w-56 h-12">
+          <div className="relative w-80 sm:w-56 h-40">
             <Image
               src="/assets/logo-primary.png"
               alt="Azərbaycan Elm və İnnovasiya Könüllüləri"
