@@ -33,7 +33,7 @@ Frontend ayrıca işləyir: `npm run dev` (http://localhost:3000).
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/aeik_database?retryWrites=true&w=majority
 MONGODB_DB=aeik_database   # istəyə bağlı (URI-də baza adı yoxdursa)
 JWT_SECRET=uzun_təsadüfi_açar
-CORS_ORIGINS=http://localhost:3000   # vergüllə bir neçə origin, və ya *
+CORS_ORIGINS=https://aeik.vercel.app   # vergüllə bir neçə origin, və ya *
 ```
 
 Vercel-də eyni adlarla **Environment Variables** bölməsinə əlavə edin.

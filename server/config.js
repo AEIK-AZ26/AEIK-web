@@ -19,7 +19,8 @@ const JWT_SECRET = (process.env.JWT_SECRET || DEFAULT_JWT_SECRET).trim();
 const PORT = Number(process.env.PORT) || 4000;
 const API_VERSION = '1.0.0';
 
-const LOCAL_ORIGINS = [
+const DEFAULT_ORIGINS = [
+  'https://aeik.vercel.app',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:4000',
@@ -34,7 +35,7 @@ const configuredOrigins = [process.env.CORS_ORIGINS, process.env.NEXT_PUBLIC_APP
   .filter(Boolean);
 
 const ALLOW_ALL_ORIGINS = configuredOrigins.includes('*');
-const ALLOWED_ORIGINS = Array.from(new Set([...LOCAL_ORIGINS, ...configuredOrigins.filter((o) => o !== '*')]));
+const ALLOWED_ORIGINS = Array.from(new Set([...DEFAULT_ORIGINS, ...configuredOrigins.filter((o) => o !== '*')]));
 
 /** Mongo URI real şifrə ilə verilibmi? Placeholder varsa baza "konfiqurasiya olunmayıb" sayılır. */
 function isDbConfigured() {
