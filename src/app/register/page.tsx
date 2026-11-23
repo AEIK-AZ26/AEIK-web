@@ -66,17 +66,9 @@ export default function RegisterPage() {
       router.push("/kabinet");
     } catch (err: any) {
       console.error("Registration fetch error:", err);
-      // Fallback
-      const userDoc = {
-        uid: "local_" + Date.now(),
-        displayName: name,
-        email: email,
-        department: department,
-        role: "member",
-        createdAt: Date.now(),
-      };
-      localStorage.setItem("aeik_user", JSON.stringify(userDoc));
-      router.push("/kabinet");
+      setError("Serverlə əlaqə qurulmadı. Zəhmət olmasa internet və ya baza bağlantısını yoxlayın.");
+    } finally {
+      setLoading(false);
     }
   };
 

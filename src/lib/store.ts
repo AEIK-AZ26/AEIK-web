@@ -120,9 +120,15 @@ export async function fetchRemoteState(): Promise<{ connected: boolean; data?: A
 // Sync single mutation with MongoDB backend
 export async function syncToBackend(entity: string, action: 'save' | 'delete', id: string, data?: any) {
   try {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('aeik_token') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     await fetch('/api/sync', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ entity, action, id, data })
     });
   } catch (err) {
