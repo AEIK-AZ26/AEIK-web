@@ -1,114 +1,176 @@
-# Azərbaycan Elm və İnnovasiya Könüllüləri (AEİK) — Veb Sayt və Şəxsi Kabinet
+# AEİK — Elm və İnnovasiya Proqramı
 
-Bu layihə **Azərbaycan Elm və İnnovasiya Könüllüləri (AEİK)** təşkilatının rəsmi veb saytı, autentifikasiya sistemi (Login & Register) və **İdarə Heyəti Şəxsi Kabineti** (Board Management Dashboard) üçün hazırlanmış tam funksional tətbiqdir.
+**Azərbaycan Elm və İnnovasiya Könüllüləri (AEİK)** təşkilatının rəsmi veb saytı və idarə heyəti üçün şəxsi kabinet.
 
----
+Layihə iki hissədən ibarətdir:
 
-## 🚀 Texnoloji Yığın (Tech Stack)
+| Hissə | Texnologiya | İşə salma |
+|---|---|---|
+| **Frontend** — landing, login, register, kabinet | Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS | `npm run dev` → `http://localhost:3000` |
+| **Web API** — autentifikasiya və məlumatlar | Node.js + Express 5 + MongoDB (native driver) | `npm run server` → `http://localhost:4000/api/v1` |
 
-- **Frontend**: Next.js 14 (React 18), Tailwind CSS, Lucide Icons
-- **Backend**: Next.js API Routes (Node.js)
-- **Verilənlər Bazası**: Google Cloud Firestore & Firebase Auth
-- **Yerləşdirmə (Deploy)**: Vercel (1 kliklə birbaşa yerləşdirmə üçün tam hazır)
-
----
-
-## 📋 Şəxsi Kabinetin Əsas Bölmələri (10 Modul)
-
-1. **Hesabatlar (`reports`)**:
-   - Əsas Google Drive qovluğuna sürətli keçid
-   - Departamentlər üzrə 12 ayın Drive linkləri (*Layihələrin idarə olunması*, *SMM və dizayn*, *Jurnal və layihələr*)
-   - Adminlər üçün istənilən ayın Drive linkini dəyişmə və saxlama imkanı
-2. **Aktivlik / Davamiyyət (`activity`)**:
-   - İdarə heyəti üzvlərinin qeydiyyatı və siyahısı
-   - 12 ay üzrə davamiyyət matrisi (`+` qatıldı, `−` qatılmadı, `boş`)
-   - Aylar üzrə dinamik iştirak sütun qrafiki
-   - Hər üzv üzrə fərdi iştirak faizi və irəliləyiş zolağı (progress bar)
-3. **Layihələr (`projects`)**:
-   - Dövri və Böyük layihələrin qeydiyyatı, filtrlənməsi
-   - Mərhələlər: *Planlaşma*, *Hazırlıq*, *İcrada*, *Tamamlandı*
-   - İştirakçı sayı, məsul şəxs, qonaqlar və təfərrüat qeydləri
-   - Hər layihəyə xüsusi təqvim tarixləri təyin etmə
-4. **Təqvim / Fəaliyyət Planı (`calendar`)**:
-   - İllik və aylıq naviqator
-   - 7 günlük interaktiv təqvim qridi (B.e. - Baz)
-   - Layihələr üçün xüsusi rəng çipləri ilə hadisələrin vizual görüntüsü
-   - Günə klikləyərək tədbir əlavə etmə və aylıq hadisələr siyahısı
-5. **Post Planı (`posts`)**:
-   - SMM paylaşımlarının qeydiyyatı (Instagram, Facebook, LinkedIn, Telegram, X)
-   - Statuslar: *İdeya*, *Hazırlanır*, *Təsdiqdə*, *Paylaşıldı*
-   - Layihə ilə əlaqələndirmə və nəticə linkinin əlavə edilməsi
-6. **Əməkdaşlıq (`partners`)**:
-   - Tərəfdaş universitetlər, dövlət qurumları, QHT-lər və sponsorlar
-   - Statuslar: *Əlaqə qurulub*, *Danışıqlar*, *Razılaşma*, *Aktiv*, *Dayandırılıb*
-   - Əlaqə şəxsi, son əlaqə tarixi və növbəti addım qeydi
-7. **Nəticələr (`results`)**:
-   - Əldə olunan nailiyyətlər, qrantlar, sponsorluqlar və statistik nəticələr
-   - Məbləğ və ya say göstəricisi, hesabat və sənəd linkləri
-8. **İclaslar və Qərarlar (`meetings`)**:
-   - İclas protokolları, müzakirə gündəliyi və qəbul olunmuş rəsmi qərarlar
-9. **Görüləcək İşlər (`tasks`)**:
-   - Tapşırıqlar lövhəsi (*Gözləyir*, *Davam edir*, *Tamam*)
-   - Məsul şəxs və təfərrüat qeydləri
-10. **Qeydlər (`notes`)**:
-    - Daxili xatırlatmalar və təşkilati qeydlər jurnalı
+Vercel-də hər ikisi **tək layihə** kimi yayımlanır: Next.js səhifələri + `api/v1/*` serverless funksiyası.
 
 ---
 
-## 🔒 Autentifikasiya və Rollar
+## Səhifələr
 
-- **Giriş (Login)**: Email və şifrə ilə daxil olma. Həmçinin dərhal yoxlamaq üçün **1 kliklə Admin və Üzv kimi test girişi** düymələri mövcuddur.
-- **Qeydiyyat (Register)**: Ad, soyad, email, şöbə seçimi və şifrə ilə qeydiyyat.
-- **Rollar**:
-  - `Admin`: Məlumatları əlavə edir, redaktə edir, silir və üzvlərin davamiyyətini qeyd edir.
-  - `Üzv`: Panel məlumatlarını izləyir, tapşırıqları və layihələri görür.
-  - *Qeyd: Paneldəki header-də yerləşən "Admin / Üzv" düyməsi ilə istənilən vaxt iki baxış rejimini dərhal dəyişib sınaqdan keçirə bilərsiniz.*
+| Yol | Təsvir |
+|---|---|
+| `/` | Əsas landing səhifəsi (proqram, istiqamətlər, statistika, əlaqə) |
+| `/login` | Email və şifrə ilə giriş |
+| `/register` | Yeni istifadəçi qeydiyyatı |
+| `/kabinet` | İdarə heyəti kabineti (10 modul) |
+| `/kabinet/users` | İstifadəçi və rol idarəetməsi (owner/admin) |
+
+### Kabinet modulları
+
+Hesabatlar, davamiyyət, layihələr, təqvim, post planı, əməkdaşlıq, nəticələr, iclaslar, tapşırıqlar və qeydlər — hər modul üçün məlumat `items` kolleksiyasında `sec` sahəsi ilə saxlanılır.
+
+### Rollar
+
+- **owner / admin** — məlumat əlavə etmək, redaktə etmək, silmək, istifadəçiləri idarə etmək.
+- **member** — kabinet məlumatlarını oxumaq.
 
 ---
 
-## 💾 Firebase & Firestore İnteqrasiyası
+## Layihə strukturu
 
-Tətbiq **Cloud Firestore** və **Firebase Auth** ilə tam inteqrasiya üçün kodlaşdırılmışdır.
-
-### Firebase açarlarını necə əlavə etmək olar?
-1. Layihənin ana qovluğunda `.env.local` adlı fayl yaradın (və ya `.env.example` faylının adını dəyişin).
-2. Firebase Console-dan (`https://console.firebase.google.com`) əldə etdiyiniz parametrləri daxil edin:
-
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=aeik-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=aeik-project
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=aeik-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
+```
+.
+├── api/v1/                # Vercel serverless körpüsü (Express app-i ixrac edir)
+├── server/                # Ayrıca Web API
+│   ├── app.js             # Express app (CORS, JSON, xəta emalı)
+│   ├── index.js           # Lokal server
+│   ├── config.js          # Env, CORS, baza adı
+│   ├── db.js              # MongoDB bağlantısı (keş + indekslər + seed)
+│   ├── auth.js            # JWT (Bearer) + bcrypt + rol middleware-ləri
+│   ├── collections.js     # CRUD resurs sxemləri
+│   ├── data/seed.js       # Boş baza üçün ilkin məlumatlar
+│   └── routes/            # auth, users, crud, data, public
+├── src/
+│   ├── app/               # Next.js səhifələri (App Router)
+│   ├── components/        # Navbar, Footer, kabinet komponentləri
+│   ├── data/program.ts    # Landing-in statik məzmunu
+│   └── lib/               # Köməkçi funksiyalar
+└── public/                # Şəkillər və şriftlər
 ```
 
-> **İnnovativ Demo Xüsusiyyəti**: Firebase açarlarını hələ daxil etməsəniz belə, tətbiq daxili **LocalStorage rejimində** işləyir və bütün dataları yaddaşda saxlayır. Firebase açarlarını daxil etdiyiniz anda isə məlumatlar birbaşa Google Cloud Firestore ilə sinxronlaşır.
+`server/README.md` — API-nin ətraflı sənədləşməsi (bütün endpoint-lər, yeni modul əlavə etmə qaydası).
 
 ---
 
-## 💻 Layihəni Lokal İşə Salmaq
+## Lokal işə salma
 
 ```bash
-# Asılılıqları quraşdırın (artıq quraşdırılıb)
+# 1. Asılılıqlar
 npm install
 
-# İnkişaf serverini işə salın
-npm run dev
+# 2. Mühit dəyişənləri (.env.example faylını .env kimi kopyalayın)
+cp .env.example .env
 ```
 
-Brauzerinizdə `http://localhost:3000` ünvanını açın:
-- **Əsas Sayt**: `http://localhost:3000`
-- **Şəxsi Kabinet**: `http://localhost:3000/kabinet`
-- **Giriş**: `http://localhost:3000/login`
-- **Qeydiyyat**: `http://localhost:3000/register`
+`.env` faylında ən azı bunlar olmalıdır:
+
+```env
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/aeik_database?retryWrites=true&w=majority
+JWT_SECRET=uzun_tesadufi_acar
+```
+
+Sonra iki prosesi ayrı-ayrı terminallarda başladın:
+
+```bash
+npm run dev          # Next.js  → http://localhost:3000
+npm run server       # Web API  → http://localhost:4000/api/v1
+# və ya canlı yenilənmə ilə:
+npm run server:dev
+```
+
+API-nin işlədiyini yoxlamaq:
+
+```bash
+curl http://localhost:4000/api/v1/health
+```
 
 ---
 
-## ☁️ Vercel-də Deploy Etmək
+## Mühit dəyişənləri
 
-Layihə Next.js üzərində qurulduğu üçün Vercel-də yerləşdirmək olduqca sadədir:
-1. Layihəni GitHub / GitLab / Bitbucket reponuza göndərin (`git push`).
-2. [Vercel](https://vercel.com) saytına daxil olun və "Add New Project" seçib reponuzu seçin.
-3. "Environment Variables" bölməsinə Firebase açarlarınızı əlavə edin (istəyə bağlı).
-4. **Deploy** düyməsinə klikləyin. 1 dəqiqə ərzində saytınız canlı yayımda olacaq!
+| Dəyişən | Tələb | Təsvir |
+|---|---|---|
+| `MONGODB_URI` | bəli | MongoDB Atlas bağlantı sətri |
+| `MONGODB_DB` | yox | Baza adı (URI-də göstərilməyibsə) |
+| `JWT_SECRET` | bəli | Token imzalama açarı (uzun və təsadüfi) |
+| `CORS_ORIGINS` | yox | İcazəli origin-lər, vergüllə. Default: `https://aeik.vercel.app`, `http://localhost:3000` |
+| `NEXT_PUBLIC_APP_URL` | yox | Saytın tam ünvanı (canonical/OpenGraph üçün) |
+| `PORT` | yox | Lokal API portu (default `4000`) |
+
+> `.env` faylı `.gitignore`-dadır — real açarlar heç vaxt repoya düşməməlidir.
+
+---
+
+## API xülasəsi
+
+Baza yol: `/api/v1` (lokal serverdə `/v1` da işləyir). Autentifikasiya: `Authorization: Bearer <token>`, token 30 gün etibarlıdır.
+
+| Metod | Yol | İcazə |
+|---|---|---|
+| GET | `/health` | açıq |
+| POST | `/auth/register` | açıq |
+| POST | `/auth/login` | açıq |
+| GET | `/auth/me` | token |
+| GET/POST | `/users`, PATCH/DELETE `/users/:id` | owner/admin |
+| GET | `/data` | token |
+| POST | `/sync` | owner/admin |
+| GET | `/public/projects`, `/public/members` | açıq |
+| CRUD | `/members`, `/projects`, `/events`, `/attendance`, `/links`, `/items` | oxu: token, yazma: owner/admin |
+
+Hər CRUD resursunda `GET /`, `GET /:id`, `POST /`, `PATCH /:id`, `PUT /:id`, `DELETE /:id` mövcuddur. Siyahılarda `?limit=`, `?skip=` və sahə filtri (məs. `/items?sec=posts`) dəstəklənir.
+
+**Yeni modul əlavə etmək:** `server/collections.js` faylına bir giriş yazın — CRUD route-ları avtomatik yaranır:
+
+```js
+budgets: {
+  collection: 'budgets',
+  idPrefix: 'b',
+  idField: 'id',
+  fields: ['id', 'title', 'amount', 'ts'],
+  sort: { ts: -1 },
+}
+```
+
+---
+
+## Yoxlama
+
+```bash
+npm run build        # production build
+npx tsc --noEmit     # tip yoxlaması
+```
+
+> `npm run lint` bu repoda ESLint konfiqurasiyası olmadığı üçün ilk dəfə interaktiv quraşdırma tələb edir.
+
+---
+
+## Vercel-də yayımlama
+
+1. Repo-nu GitHub-a push edin (`main` branch-i production branch-idir).
+2. Vercel-də layihəni repo-ya bağlayın — framework avtomatik `Next.js` seçilir.
+3. **Environment Variables** bölməsinə `MONGODB_URI` və `JWT_SECRET` əlavə edin (production üçün).
+4. Deploy edin. `api/v1/*` avtomatik serverless funksiya kimi tanınır, əlavə konfiqurasiya lazım deyil.
+
+Deploy-dan sonra yoxlayın:
+
+```
+GET https://aeik.vercel.app/api/v1/health
+```
+
+Canlı ünvan: **https://aeik.vercel.app**
+
+---
+
+## Qeydlər
+
+- Landing məzmunu hazırda `src/data/program.ts` faylında statik saxlanılır; API-yə keçid mərhələli şəkildə planlaşdırılır.
+- `src/app/api/*` altındaki köhnə Next.js API route-ları hələ mövcuddur; əsas backend `server/` qovluğundakı Express API-dir.
+- Şrift (Manrope) `public/fonts/` qovluğunda self-host edilib.
