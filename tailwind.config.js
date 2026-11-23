@@ -4,27 +4,32 @@ module.exports = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/data/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
+        ink: '#201A3F',
+        canvas: '#F7F6FC',
+        hero: '#F5F4FF',
+        deep: '#3E3171',
         brand: {
-          50: '#F5F3FF',
-          100: '#EDE9FE',
-          200: '#DDD6FE',
-          300: '#C4B5FD',
-          400: '#A78BFA',
-          500: '#8B5CF6',
-          600: '#5842D8', // Main primary purple
-          700: '#4732C5',
-          800: '#3A28A7',
-          900: '#2E1F85',
-          dark: '#1D1730',
-          darker: '#150F26',
+          50: '#F3F1FF',
+          100: '#EAE6FE',
+          200: '#D9D2FD',
+          300: '#BFB3FB',
+          400: '#9C8AF8',
+          500: '#7C67F7',
+          600: '#6552F5', // Main primary purple
+          700: '#5340E0',
+          800: '#4332B8',
+          900: '#332785',
+          dark: '#201A3F',
+          darker: '#29213F',
         }
       },
       fontFamily: {
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        sans: ['Manrope', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
       },
       borderRadius: {
         '2xl': '1rem',
