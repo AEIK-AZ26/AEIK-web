@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUp, ArrowUpRight, LayoutDashboard } from "lucide-react";
+import SectionLink from "@/components/SectionLink";
 import { FOOTER } from "@/data/program";
 
 const PANEL_LINKS = [
@@ -61,9 +62,9 @@ export default function Footer() {
             <ul className="mt-4 space-y-2.5">
               {FOOTER.discover.map((item) => (
                 <li key={item.label}>
-                  <Link href={item.href} className="text-[12.5px] text-white/80 transition-colors hover:text-white">
+                  <SectionLink href={item.href} className="text-[12.5px] text-white/80 transition-colors hover:text-white">
                     {item.label}
-                  </Link>
+                  </SectionLink>
                 </li>
               ))}
             </ul>
@@ -74,13 +75,13 @@ export default function Footer() {
               {FOOTER.periodTitle}
             </h4>
             <p className="mt-4 text-[12.5px] font-semibold text-white/90">{FOOTER.period}</p>
-            <Link
-              href="/#fealiyyet"
+            <SectionLink
+              href="#fealiyyet"
               className="mt-2 inline-flex items-center gap-1.5 text-[12px] text-white/70 transition-colors hover:text-white"
             >
               {FOOTER.periodLink}
               <ArrowUpRight size={12} />
-            </Link>
+            </SectionLink>
             <p className="mt-3 text-[12px] text-white/55">{FOOTER.periodText}</p>
           </div>
 
@@ -109,9 +110,9 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <p>{FOOTER.note}</p>
             <span className="hidden h-3 w-px bg-white/15 sm:block" />
-            <a href="#" className="inline-flex items-center gap-1 text-white/60 transition-colors hover:text-white">
+            <SectionLink href="/" className="inline-flex items-center gap-1 text-white/60 transition-colors hover:text-white">
               Yuxarı <ArrowUp size={12} />
-            </a>
+            </SectionLink>
           </div>
         </div>
       </div>

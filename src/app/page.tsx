@@ -10,13 +10,13 @@ import {
   CalendarDays,
   Check,
   Megaphone,
-  Newspaper,
   Quote,
-  Sparkles,
 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SectionLink from "@/components/SectionLink";
+import ContentCarousel from "@/components/ContentCarousel";
 import Reveal from "@/components/ui/Reveal";
 import {
   DEFAULT_CONTENT,
@@ -158,20 +158,20 @@ export default function HomePage() {
 
               <Reveal delay={200}>
                 <div className="mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                  <Link
+                  <SectionLink
                     href={HERO.primary.href}
                     className="group inline-flex h-12 items-center gap-2 rounded-full bg-brand-600 px-6 text-[12.5px] font-bold text-white shadow-[0_18px_34px_-20px_rgba(101,82,245,0.9)] transition-all hover:bg-brand-700 hover:shadow-[0_22px_40px_-20px_rgba(101,82,245,0.95)]"
                   >
                     {HERO.primary.label}
                     <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-                  <Link
+                  </SectionLink>
+                  <SectionLink
                     href={HERO.secondary.href}
                     className="group inline-flex h-12 items-center gap-2 rounded-full border border-white/80 bg-white/85 px-6 text-[12.5px] font-bold text-ink backdrop-blur transition-colors hover:border-brand-200 hover:text-brand-700"
                   >
                     {HERO.secondary.label}
                     <ArrowRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
-                  </Link>
+                  </SectionLink>
                 </div>
               </Reveal>
 
@@ -237,10 +237,10 @@ export default function HomePage() {
                 {connected ? "Məzmun canlı yenilənir" : "Statik məzmun · oflayn fallback"}
               </span>
               <span className="hidden sm:block">{HERO.motto}</span>
-              <a href="#haqqimizda" className="inline-flex items-center gap-1.5 transition-colors hover:text-brand-600">
+              <SectionLink href="#haqqimizda" className="inline-flex items-center gap-1.5 transition-colors hover:text-brand-600">
                 {HERO.scroll}
                 <ArrowDown size={13} strokeWidth={2.5} />
-              </a>
+              </SectionLink>
             </div>
           </div>
         </div>
@@ -249,8 +249,8 @@ export default function HomePage() {
       {/* ───────────────────────── STATS ───────────────────────── */}
       <section className="border-b border-[#F1EFF8] bg-white">
         <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-x-5 gap-y-8 py-9 sm:grid-cols-4 lg:gap-x-0 lg:py-11">
-            <Reveal className="col-span-2 sm:col-span-1">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-8 py-9 sm:grid-cols-4 lg:grid-cols-5 lg:gap-x-0 lg:py-11">
+            <Reveal className="col-span-2 sm:col-span-4 lg:col-span-1">
               <p className="text-[9.5px] font-bold uppercase leading-[1.9] tracking-[0.14em] text-[#4E4768] lg:text-[10px]">
                 Bir proqram.
                 <br />
@@ -296,6 +296,12 @@ export default function HomePage() {
                     </li>
                   ))}
               </ul>
+              <Link
+                href="/haqqimizda"
+                className="mt-6 inline-flex items-center gap-1.5 text-[12px] font-bold text-brand-600 transition-colors hover:text-brand-700"
+              >
+                Ətraflı oxu <ArrowUpRight size={14} />
+              </Link>
             </Reveal>
           </div>
         </div>
@@ -315,45 +321,7 @@ export default function HomePage() {
             </span>
           </Reveal>
 
-          <div className="mt-9 grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">
-            {groups.announcement.slice(0, 4).map((item, index) => (
-              <Reveal key={item.id} delay={index * 60} as="article">
-                <a
-                  href={item.link || "#elaqe"}
-                  target={item.link?.startsWith("http") ? "_blank" : undefined}
-                  rel={item.link?.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-[#EAE7F7] bg-white transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_28px_50px_-34px_rgba(32,26,63,0.55)] sm:flex-row"
-                >
-                  {item.image && (
-                    <div className="relative h-40 w-full shrink-0 overflow-hidden bg-[#EFECFA] sm:h-auto sm:w-[42%]">
-                      <MediaImage src={item.image} alt={item.title} className="transition-transform duration-500 group-hover:scale-105" />
-                      <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-700 backdrop-blur">
-                        {item.subtitle || "Elan"}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex min-w-0 flex-1 flex-col p-5">
-                    {!item.image && item.subtitle && (
-                      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-brand-600">{item.subtitle}</p>
-                    )}
-                    <h3 className="mt-1 text-[16px] font-extrabold leading-[1.25] tracking-[-0.02em] text-ink sm:text-[17px]">
-                      {item.title}
-                    </h3>
-                    {item.text && <p className="mt-2.5 line-clamp-3 text-[12px] leading-[1.7] text-[#5A5270]">{item.text}</p>}
-                    <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-                      <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-[#6E6788]">
-                        <CalendarDays size={12} className="text-brand-600" />
-                        {item.date ? formatDate(item.date) : item.meta || "Davam edir"}
-                      </span>
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1EEFE] text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                        <ArrowUpRight size={14} strokeWidth={2.5} />
-                      </span>
-                    </div>
-                  </div>
-                </a>
-              </Reveal>
-            ))}
-          </div>
+          <ContentCarousel variant="announcement" items={groups.announcement} className="mt-9" />
         </div>
       </section>
 
@@ -368,39 +336,7 @@ export default function HomePage() {
             />
           </Reveal>
 
-          <div className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {groups.news.slice(0, 6).map((item, index) => (
-              <Reveal key={item.id} delay={index * 70} as="article">
-                <a
-                  href={item.link || "#xeberler"}
-                  target={item.link?.startsWith("http") ? "_blank" : undefined}
-                  rel={item.link?.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-[#EFEDF8] bg-white transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_30px_54px_-36px_rgba(32,26,63,0.5)]"
-                >
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#EFECFA]">
-                    <MediaImage src={item.image} alt={item.title} className="transition-transform duration-500 group-hover:scale-[1.04]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1B1533]/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                    {item.subtitle && (
-                      <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-700 backdrop-blur">
-                        {item.subtitle}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8A83A0]">
-                      {item.date ? formatDate(item.date) : "Xəbər"}
-                    </p>
-                    <h3 className="mt-2 text-[16px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink">{item.title}</h3>
-                    {item.text && <p className="mt-2 line-clamp-3 text-[12px] leading-[1.7] text-[#5A5270]">{item.text}</p>}
-                    <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[11px] font-bold text-brand-600">
-                      <Newspaper size={12} /> Oxu
-                      <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </span>
-                  </div>
-                </a>
-              </Reveal>
-            ))}
-          </div>
+          <ContentCarousel variant="news" items={groups.news} className="mt-9" />
         </div>
       </section>
 
@@ -415,43 +351,7 @@ export default function HomePage() {
             />
           </Reveal>
 
-          <div className="mt-9 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
-            {groups.project.slice(0, 6).map((project, index) => (
-              <Reveal key={project.id} delay={index * 70} as="article" className="h-full">
-                <div className="group flex h-full flex-col rounded-[24px] border border-[#EAE7F7] bg-white p-2.5 transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_32px_60px_-38px_rgba(32,26,63,0.55)] lg:rounded-[28px] lg:p-3">
-                  <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[16px] bg-[#101828] lg:rounded-[20px]">
-                    <MediaImage src={project.image} alt={project.title} className="transition-transform duration-500 group-hover:scale-[1.03]" />
-                    <span className="absolute left-3 top-3 rounded-full bg-white/92 px-3 py-1 text-[9.5px] font-semibold text-brand-700 backdrop-blur">
-                      {project.subtitle || "Layihə"}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-1 flex-col px-3 pb-2 pt-5 lg:px-4 lg:pt-6">
-                    <h3 className="text-[19px] font-extrabold leading-[1.18] tracking-[-0.025em] text-ink lg:text-[23px]">
-                      {project.title}
-                    </h3>
-                    {project.text && <p className="mt-2.5 text-[12px] leading-[1.75] text-[#5A5270] lg:text-[12.5px]">{project.text}</p>}
-
-                    {project.meta && (
-                      <p className="mt-4 text-[11px] font-semibold leading-relaxed text-[#3E3171]">{project.meta}</p>
-                    )}
-
-                    <div className="mt-auto flex items-center justify-between border-t border-[#F3F1FA] pt-4">
-                      <a
-                        href={project.link || "#elaqe"}
-                        className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-brand-600 hover:text-brand-700"
-                      >
-                        Proqramla tanış ol <ArrowUpRight size={13} />
-                      </a>
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1EEFE] text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                        <Sparkles size={14} />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          <ContentCarousel variant="project" items={groups.project} className="mt-9" />
         </div>
       </section>
 
@@ -545,12 +445,12 @@ export default function HomePage() {
                   Müraciət et
                   <ArrowUpRight size={15} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
-                <a
+                <SectionLink
                   href="#fealiyyet"
                   className="inline-flex h-11 items-center gap-2 rounded-full border border-[#E4E0F2] bg-white px-5 text-[12px] font-bold text-ink transition-colors hover:border-brand-200 hover:text-brand-700"
                 >
                   Fəaliyyət planı <ArrowRight size={14} />
-                </a>
+                </SectionLink>
               </div>
             </Reveal>
 
@@ -634,13 +534,13 @@ export default function HomePage() {
                   </h2>
                   <p className="mt-3 text-[12.5px] leading-relaxed text-[#5E5776] lg:text-[13.5px]">{CTA.text}</p>
                 </div>
-                <Link
+                <SectionLink
                   href="#layiheler"
                   className="group inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-ink px-6 text-[12.5px] font-bold text-white transition-colors hover:bg-[#2E2552]"
                 >
                   {CTA.button}
                   <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </Link>
+                </SectionLink>
               </div>
             </div>
           </Reveal>

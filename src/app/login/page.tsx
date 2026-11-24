@@ -104,9 +104,9 @@ export default function LoginPage() {
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
                 Şifrə
               </label>
-              <a href="#" className="text-xs text-brand-600 hover:underline">
+              <span className="text-xs text-brand-600">
                 Şifrəni unutmusan?
-              </a>
+              </span>
             </div>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />

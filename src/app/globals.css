@@ -142,6 +142,45 @@ body {
   animation: float-soft 7s ease-in-out infinite;
 }
 
+/* ── Content carousel (Swiper) ──────────────────────────────────── */
+.content-swiper .swiper {
+  overflow: hidden;
+  padding-bottom: 2px;
+}
+.content-swiper .swiper-slide {
+  height: auto;
+}
+.content-swiper .swiper-pagination {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: auto;
+}
+.content-swiper .swiper-pagination-bullet {
+  width: 6px;
+  height: 6px;
+  margin: 0 !important;
+  border-radius: 9999px;
+  background: #CDC5EA;
+  opacity: 1;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.content-swiper .swiper-pagination-bullet-active {
+  width: 22px;
+  background: linear-gradient(90deg, #6552F5 0%, #8F7BFF 100%);
+}
+/* Tək səhifə varsa (hamısı görünür) nöqtələri göstərmirik */
+.content-swiper .swiper-pagination:has(.swiper-pagination-bullet:only-child) {
+  visibility: hidden;
+}
+
+.content-swiper .swiper-button-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.45; transform: scale(0.85); }

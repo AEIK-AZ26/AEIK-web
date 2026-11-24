@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SectionLink from "@/components/SectionLink";
 import { DEFAULT_APPLICATION_FORM, ApplicationFormConfig, FormField } from "@/lib/applicationForm";
 import { loadApplicationForm, submitApplication } from "@/lib/contentApi";
 
@@ -110,12 +111,12 @@ export default function MuracietPage() {
         <div className="pointer-events-none absolute -right-16 -top-10 h-72 w-72 rounded-full bg-[#9C8AF8]/20 blur-3xl" />
 
         <div className="relative mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-          <Link
-            href="/#uzvluk"
+          <SectionLink
+            href="#uzvluk"
             className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-700 transition-colors hover:text-brand-800"
           >
             <ArrowLeft size={13} /> Üzvlük proqramı
-          </Link>
+          </SectionLink>
 
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-[620px]">
