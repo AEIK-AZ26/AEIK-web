@@ -235,8 +235,11 @@ export const FOOTER = {
   discoverTitle: "Kəşf edin",
   discover: [
     { label: "Proqram haqqında", href: "#haqqimizda" },
+    { label: "Elanlar", href: "#elanlar" },
+    { label: "Xəbərlər", href: "#xeberler" },
     { label: "Böyük layihələr", href: "#layiheler" },
-    { label: "Davamlı fəaliyyətlər", href: "#fealiyyet" },
+    { label: "Fəaliyyət planı", href: "#fealiyyet" },
+    { label: "Üzvlük proqramı", href: "#uzvluk" },
   ],
   periodTitle: "Proqram dövrü",
   period: "İyul 2026 – Mart 2027",

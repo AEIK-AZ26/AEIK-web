@@ -1,103 +1,241 @@
+"use client";
+
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowRight, ArrowUpRight } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  Check,
+  Megaphone,
+  Newspaper,
+  Quote,
+  Sparkles,
+} from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Reveal from "@/components/ui/Reveal";
 import {
-  ABOUT,
-  ACTIVITIES,
-  CTA,
-  HERO,
-  OUTCOMES,
-  PROJECTS,
-  ROADMAP,
-  ROTATION,
-  STATS,
-} from "@/data/program";
+  DEFAULT_CONTENT,
+  FALLBACK_IMAGE,
+  SiteItem,
+  fetchSiteContent,
+  formatDate,
+  groupContent,
+} from "@/lib/siteContent";
+import { ACTIVITIES, CTA, HERO, OUTCOMES, ROTATION } from "@/data/program";
 
 function Label({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <span
-      className={`text-[10px] font-bold uppercase leading-none tracking-[0.16em] text-brand-600 lg:text-[11px] ${className}`}
+      className={`inline-flex items-center gap-2 text-[10px] font-bold uppercase leading-none tracking-[0.18em] text-brand-600 lg:text-[11px] ${className}`}
     >
+      <span className="h-1 w-1 rounded-full bg-brand-600" />
       {children}
     </span>
   );
 }
 
+function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src || FALLBACK_IMAGE}
+      alt={alt}
+      loading="lazy"
+      className={`h-full w-full object-cover ${className}`}
+      onError={(e) => {
+        const node = e.currentTarget as HTMLImageElement;
+        if (!node.src.endsWith(FALLBACK_IMAGE)) node.src = FALLBACK_IMAGE;
+      }}
+    />
+  );
+}
+
+function SectionHeading({
+  label,
+  title,
+  text,
+  align = "left",
+  tone = "light",
+}: {
+  label: string;
+  title: React.ReactNode;
+  text?: string;
+  align?: "left" | "center";
+  tone?: "light" | "dark";
+}) {
+  return (
+    <div className={align === "center" ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+      <Label className={tone === "dark" ? "!text-[#B9ABEE]" : ""}>{label}</Label>
+      <h2
+        className={`mt-4 text-[28px] font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-[36px] lg:text-[44px] ${
+          tone === "dark" ? "text-white" : "text-ink"
+        }`}
+      >
+        {title}
+      </h2>
+      {text && (
+        <p
+          className={`mt-4 text-[13px] leading-[1.8] sm:text-[14px] ${
+            tone === "dark" ? "text-[#CFC6EC]" : "text-[#5A5270]"
+          }`}
+        >
+          {text}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function HomePage() {
+  const [content, setContent] = useState<SiteItem[]>(DEFAULT_CONTENT);
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchSiteContent().then((res) => {
+      if (cancelled) return;
+      setContent(res.items);
+      setConnected(res.connected);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const groups = useMemo(() => groupContent(content), [content]);
+
+  const about = groups.about[0] || DEFAULT_CONTENT[0];
+  const aboutPoints = (about.body || "")
+    .split("\n")
+    .map((line) => line.replace(/^[-•]\s*/, "").trim())
+    .filter(Boolean);
+
+  const heroAnnouncement = groups.announcement[0];
+  const stats = [
+    { value: String(groups.project.length), label: "Böyük layihə" },
+    { value: String(groups.plan.length), label: "Aylıq fəaliyyət planı" },
+    { value: String(groups.news.length), label: "Yayımlanmış xəbər" },
+    { value: String(groups.membership.length), label: "Üzvlük addımı" },
+  ];
+
   return (
     <div className="min-h-screen bg-white text-ink">
       <Navbar />
 
       {/* ───────────────────────── HERO ───────────────────────── */}
-      <section className="bg-hero">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <div className="grid grid-cols-1 items-start gap-10 pb-10 pt-8 lg:grid-cols-[minmax(0,1fr)_608px] lg:gap-16 lg:pb-3 lg:pt-8">
-            <div className="max-w-[560px] lg:pt-8">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#EAE6FE] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-brand-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-600" />
-                {HERO.badge}
-              </span>
+      <section className="hero-mesh relative overflow-hidden">
+        <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-brand-300/25 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-0 h-80 w-80 rounded-full bg-[#9C8AF8]/25 blur-3xl" />
 
-              <h1 className="mt-6 text-[40px] font-extrabold leading-[1.08] tracking-[-0.035em] text-ink sm:text-[52px] lg:mt-8 lg:text-[64px]">
-                {HERO.title[0]}
-                <br />
-                {HERO.title[1]}
-              </h1>
+        <div className="relative mx-auto w-full max-w-[1320px] px-4 pb-10 pt-8 sm:px-6 sm:pt-12 lg:px-8 lg:pb-14 lg:pt-16">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:gap-14">
+            <div className="max-w-[580px]">
+              <Reveal>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-700 shadow-[0_6px_20px_-14px_rgba(32,26,63,0.5)] backdrop-blur">
+                  <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-brand-600" />
+                  {HERO.badge}
+                </span>
+              </Reveal>
 
-              <p className="mt-7 max-w-[460px] text-[14px] leading-[1.75] text-[#4E4768] sm:text-[15px]">
-                {HERO.text}
-              </p>
+              <Reveal delay={80}>
+                <h1 className="mt-6 text-[38px] font-extrabold leading-[1.04] tracking-[-0.04em] text-ink sm:text-[50px] lg:text-[62px]">
+                  {HERO.title[0]}
+                  <br />
+                  <span className="text-gradient">{HERO.title[1]}</span>
+                </h1>
+              </Reveal>
 
-              <div className="mt-10 flex flex-wrap items-center gap-3 lg:mt-11">
-                <Link
-                  href={HERO.primary.href}
-                  className="group inline-flex h-[52px] items-center gap-2 rounded-full bg-brand-600 px-7 text-[13px] font-bold text-white transition-colors hover:bg-brand-700"
-                >
-                  {HERO.primary.label}
-                  <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </Link>
-                <Link
-                  href={HERO.secondary.href}
-                  className="group inline-flex h-[52px] items-center gap-2 rounded-full border border-[#E4E0F2] bg-white px-7 text-[13px] font-bold text-ink transition-colors hover:border-brand-200"
-                >
-                  {HERO.secondary.label}
-                  <ArrowRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </div>
+              <Reveal delay={140}>
+                <p className="mt-6 max-w-[470px] text-[13.5px] leading-[1.8] text-[#4E4768] sm:text-[15px]">
+                  {HERO.text}
+                </p>
+              </Reveal>
+
+              <Reveal delay={200}>
+                <div className="mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3">
+                  <Link
+                    href={HERO.primary.href}
+                    className="group inline-flex h-12 items-center gap-2 rounded-full bg-brand-600 px-6 text-[12.5px] font-bold text-white shadow-[0_18px_34px_-20px_rgba(101,82,245,0.9)] transition-all hover:bg-brand-700 hover:shadow-[0_22px_40px_-20px_rgba(101,82,245,0.95)]"
+                  >
+                    {HERO.primary.label}
+                    <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </Link>
+                  <Link
+                    href={HERO.secondary.href}
+                    className="group inline-flex h-12 items-center gap-2 rounded-full border border-white/80 bg-white/85 px-6 text-[12.5px] font-bold text-ink backdrop-blur transition-colors hover:border-brand-200 hover:text-brand-700"
+                  >
+                    {HERO.secondary.label}
+                    <ArrowRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                </div>
+              </Reveal>
+
+              <Reveal delay={260}>
+                <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#7A7391]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarDays size={13} className="text-brand-600" />
+                    {HERO.period}
+                  </span>
+                  <span className="hidden h-3 w-px bg-[#D9D4EC] sm:block" />
+                  <span>{HERO.motto}</span>
+                </div>
+              </Reveal>
             </div>
 
-            <div className="relative aspect-[608/571] w-full overflow-hidden rounded-[24px] bg-[#E3E1EE] lg:rounded-[28px]">
-              <Image
-                src="/assets/pages/hero-card.jpg"
-                alt="Elm və innovasiya proqramının simvolu"
-                fill
-                sizes="(max-width: 1024px) 100vw, 608px"
-                className="object-cover"
-                priority
-              />
-              <div className="absolute left-[4%] top-[7%] flex items-center gap-2 rounded-full bg-white/85 px-3.5 py-2 text-[8px] font-bold uppercase tracking-[0.14em] text-ink backdrop-blur lg:left-[4.5%] lg:px-4 lg:text-[9px]">
-                <span>{HERO.cardBadge[0]}</span>
-                <span className="text-brand-600/40">/</span>
-                <span className="text-brand-600">{HERO.cardBadge[1]}</span>
+            <Reveal delay={120} className="relative">
+              <div className="relative overflow-hidden rounded-[26px] bg-[#E9E6F5] shadow-[0_40px_80px_-46px_rgba(32,26,63,0.6)] ring-1 ring-white/60 lg:rounded-[32px]">
+                <div className="relative aspect-[608/571] w-full">
+                  <Image
+                    src="/assets/pages/hero-card.jpg"
+                    alt="Elm və innovasiya proqramının simvolu"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 560px"
+                    className="object-cover"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1B1533]/55 via-transparent to-transparent" />
+                </div>
+
+                <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-ink backdrop-blur sm:left-4 sm:top-4 sm:px-4 sm:py-2">
+                  <span>{HERO.cardBadge[0]}</span>
+                  <span className="text-brand-600/40">/</span>
+                  <span className="text-brand-600">{HERO.cardBadge[1]}</span>
+                </div>
+
+                {heroAnnouncement && (
+                  <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/40 bg-white/85 p-3.5 backdrop-blur-md sm:inset-x-4 sm:bottom-4 sm:p-4">
+                    <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-brand-700">
+                      <Megaphone size={11} /> Son elan
+                    </p>
+                    <p className="mt-1.5 line-clamp-2 text-[12.5px] font-bold leading-snug tracking-[-0.01em] text-ink sm:text-[14px]">
+                      {heroAnnouncement.title}
+                    </p>
+                    {heroAnnouncement.date && (
+                      <p className="mt-1 text-[10px] font-medium text-[#6E6788]">{formatDate(heroAnnouncement.date)}</p>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="absolute bottom-[3%] right-[4%] w-[56%] rounded-[14px] bg-white/45 p-3.5 backdrop-blur-md lg:rounded-[16px] lg:p-5">
-                <p className="text-[7px] font-bold uppercase tracking-[0.16em] text-brand-600 lg:text-[9px]">
-                  {HERO.cardCaption.eyebrow}
-                </p>
-                <p className="mt-1.5 text-[11px] font-semibold leading-snug tracking-[-0.01em] text-ink lg:text-[15px]">
-                  {HERO.cardCaption.title}
-                </p>
+
+              <div className="absolute -bottom-5 -left-3 hidden animate-float-soft rounded-2xl border border-[#EAE7F7] bg-white px-4 py-3 shadow-[0_22px_44px_-26px_rgba(32,26,63,0.45)] sm:block">
+                <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8A83A0]">Aktiv proqram</p>
+                <p className="mt-0.5 text-[13px] font-extrabold text-ink">{groups.project.length} layihə · {groups.plan.length} ay</p>
               </div>
-            </div>
+            </Reveal>
           </div>
 
-          <div className="pb-10 lg:pb-12">
-            <div className="h-px w-full bg-[#DEDAF0]" />
-            <div className="mt-[18px] flex flex-col gap-2 text-[9px] font-bold uppercase tracking-[0.14em] text-[#4E4768] sm:flex-row sm:items-center sm:justify-between lg:text-[10px]">
-              <span>{HERO.period}</span>
+          <div className="mt-10 lg:mt-14">
+            <div className="hairline h-px w-full" />
+            <div className="mt-4 flex flex-col gap-2 text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#4E4768] sm:flex-row sm:items-center sm:justify-between lg:text-[10px]">
+              <span className="inline-flex items-center gap-2">
+                <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-emerald-500" : "bg-brand-600"}`} />
+                {connected ? "Məzmun canlı yenilənir" : "Statik məzmun · oflayn fallback"}
+              </span>
               <span className="hidden sm:block">{HERO.motto}</span>
               <a href="#haqqimizda" className="inline-flex items-center gap-1.5 transition-colors hover:text-brand-600">
                 {HERO.scroll}
@@ -109,186 +247,236 @@ export default function HomePage() {
       </section>
 
       {/* ───────────────────────── STATS ───────────────────────── */}
-      <section className="bg-white">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-9 sm:grid-cols-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-x-0 lg:py-10">
-            <p className="col-span-2 text-[9px] font-bold uppercase leading-[1.9] tracking-[0.14em] text-[#4E4768] sm:col-span-1 lg:text-[10px]">
-              Bir proqram.
-              <br />
-              Yeni imkanlar.
-            </p>
-            {STATS.map((stat) => (
-              <div key={stat.label} className="lg:border-l lg:border-[#E9E6F4] lg:pl-8">
-                <div className="text-[32px] font-extrabold leading-none tracking-[-0.03em] text-ink lg:text-[40px]">
+      <section className="border-b border-[#F1EFF8] bg-white">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-8 py-9 sm:grid-cols-4 lg:gap-x-0 lg:py-11">
+            <Reveal className="col-span-2 sm:col-span-1">
+              <p className="text-[9.5px] font-bold uppercase leading-[1.9] tracking-[0.14em] text-[#4E4768] lg:text-[10px]">
+                Bir proqram.
+                <br />
+                Yeni imkanlar.
+              </p>
+            </Reveal>
+            {stats.map((stat, index) => (
+              <Reveal key={stat.label} delay={index * 70} className="lg:border-l lg:border-[#EDEAF7] lg:pl-7">
+                <div className="text-[30px] font-extrabold leading-none tracking-[-0.035em] text-ink lg:text-[38px]">
                   {stat.value}
                 </div>
                 <p className="mt-2 text-[9px] font-bold uppercase tracking-[0.12em] text-[#7A7391] lg:text-[10px]">
                   {stat.label}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ───────────────────────── ABOUT ───────────────────────── */}
-      <section id="haqqimizda" className="scroll-mt-24 bg-white pb-16 pt-10 lg:pb-24 lg:pt-16">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[587px_minmax(0,1fr)] lg:gap-[70px]">
-            <div className="relative aspect-[2348/1620] w-full overflow-hidden rounded-[24px] bg-[#E9EDF2] lg:rounded-[28px]">
-              <Image
-                src="/assets/pages/about-lab.jpg"
-                alt="Laboratoriyada elmi tədqiqat"
-                fill
-                sizes="(max-width: 1024px) 100vw, 587px"
-                className="object-cover"
-              />
-              <div className="absolute bottom-[4%] left-[4%] flex h-[20.5%] w-[57.5%] items-center gap-[5%] rounded-[12px] bg-white pl-[3%] pr-[2%] shadow-[0_10px_26px_rgba(32,26,63,0.10)] lg:rounded-[14px]">
-                <div className="relative h-[86%] w-auto shrink-0 aspect-square">
-                  <Image src="/assets/pages/emblem.png" alt="" fill sizes="80px" className="object-contain" />
-                </div>
-                <div>
-                  <p className="text-[9px] font-extrabold uppercase leading-tight tracking-[0.06em] text-[#3E3171] lg:text-[11px]">
-                    {ABOUT.badge.title}
-                  </p>
-                  <p className="mt-1 text-[8px] leading-tight text-[#7A7391] lg:text-[9px]">
-                    {ABOUT.badge.text}
-                  </p>
-                </div>
+      <section id="haqqimizda" className="scroll-mt-24 bg-white py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,520px)_minmax(0,1fr)] lg:gap-16">
+            <Reveal className="relative">
+              <div className="relative aspect-[2348/1620] w-full overflow-hidden rounded-[24px] bg-[#E9EDF2] shadow-[0_34px_70px_-44px_rgba(32,26,63,0.55)] lg:rounded-[28px]">
+                <MediaImage src={about.image || "/assets/pages/about-lab.jpg"} alt="Laboratoriyada elmi tədqiqat" />
               </div>
-            </div>
+            </Reveal>
 
-            <div>
-              <Label>{ABOUT.label}</Label>
-              <h2 className="mt-4 text-[28px] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[36px] lg:text-[42px]">
-                {ABOUT.title[0]}
-                <br />
-                {ABOUT.title[1]}
-              </h2>
-              <p className="mt-5 max-w-[560px] text-[13px] leading-[1.75] text-[#5A5270] lg:text-[14px]">
-                {ABOUT.text}
-              </p>
+            <Reveal delay={80}>
+              <SectionHeading label={about.subtitle || "01 / Proqram haqqında"} title={about.title} text={about.text} />
 
               <ul className="mt-7 space-y-3">
-                {ABOUT.points.map((point, index) => (
-                  <li key={point} className="flex items-center gap-3">
-                    <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[7px] border border-[#E4E0F2] text-[9px] font-bold text-brand-600">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <span className="text-[12.5px] font-medium text-ink lg:text-[13.5px]">{point}</span>
-                  </li>
-                ))}
+                {(aboutPoints.length ? aboutPoints : ["Elmi əməkdaşlıq", "Mentorluq", "İnstitusional dəstək"])
+                  .slice(0, 6)
+                  .map((point, index) => (
+                    <li key={point} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[#E4E0F2] bg-[#FBFAFF] text-[9px] font-bold text-brand-600">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="text-[12.5px] font-medium leading-relaxed text-ink lg:text-[13.5px]">{point}</span>
+                    </li>
+                  ))}
               </ul>
-            </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────── ANNOUNCEMENTS ───────────────────────── */}
+      <section id="elanlar" className="scroll-mt-24 bg-[#FAF9FF] py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <SectionHeading
+              label="02 / Elanlar"
+              title="Aktiv elanlar və imkanlar."
+              text="Müraciət, qeydiyyat və tədbir elanları — panelden idarə olunur."
+            />
+            <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-[#E4E0F2] bg-white px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-brand-700 sm:self-auto">
+              <Megaphone size={12} /> {groups.announcement.length} elan
+            </span>
+          </Reveal>
+
+          <div className="mt-9 grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">
+            {groups.announcement.slice(0, 4).map((item, index) => (
+              <Reveal key={item.id} delay={index * 60} as="article">
+                <a
+                  href={item.link || "#elaqe"}
+                  target={item.link?.startsWith("http") ? "_blank" : undefined}
+                  rel={item.link?.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-[#EAE7F7] bg-white transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_28px_50px_-34px_rgba(32,26,63,0.55)] sm:flex-row"
+                >
+                  {item.image && (
+                    <div className="relative h-40 w-full shrink-0 overflow-hidden bg-[#EFECFA] sm:h-auto sm:w-[42%]">
+                      <MediaImage src={item.image} alt={item.title} className="transition-transform duration-500 group-hover:scale-105" />
+                      <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-700 backdrop-blur">
+                        {item.subtitle || "Elan"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex min-w-0 flex-1 flex-col p-5">
+                    {!item.image && item.subtitle && (
+                      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-brand-600">{item.subtitle}</p>
+                    )}
+                    <h3 className="mt-1 text-[16px] font-extrabold leading-[1.25] tracking-[-0.02em] text-ink sm:text-[17px]">
+                      {item.title}
+                    </h3>
+                    {item.text && <p className="mt-2.5 line-clamp-3 text-[12px] leading-[1.7] text-[#5A5270]">{item.text}</p>}
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                      <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-[#6E6788]">
+                        <CalendarDays size={12} className="text-brand-600" />
+                        {item.date ? formatDate(item.date) : item.meta || "Davam edir"}
+                      </span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1EEFE] text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+                        <ArrowUpRight size={14} strokeWidth={2.5} />
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────────────── NEWS ───────────────────────── */}
+      <section id="xeberler" className="scroll-mt-24 bg-white py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <SectionHeading
+              label="03 / Xəbərlər"
+              title="Komandanın son xəbərləri."
+              text="Görüşlər, tərəfdaşlıqlar və yeni formatlar haqqında qısa xülasələr."
+            />
+          </Reveal>
+
+          <div className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {groups.news.slice(0, 6).map((item, index) => (
+              <Reveal key={item.id} delay={index * 70} as="article">
+                <a
+                  href={item.link || "#xeberler"}
+                  target={item.link?.startsWith("http") ? "_blank" : undefined}
+                  rel={item.link?.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-[#EFEDF8] bg-white transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_30px_54px_-36px_rgba(32,26,63,0.5)]"
+                >
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#EFECFA]">
+                    <MediaImage src={item.image} alt={item.title} className="transition-transform duration-500 group-hover:scale-[1.04]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1B1533]/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    {item.subtitle && (
+                      <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-700 backdrop-blur">
+                        {item.subtitle}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8A83A0]">
+                      {item.date ? formatDate(item.date) : "Xəbər"}
+                    </p>
+                    <h3 className="mt-2 text-[16px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink">{item.title}</h3>
+                    {item.text && <p className="mt-2 line-clamp-3 text-[12px] leading-[1.7] text-[#5A5270]">{item.text}</p>}
+                    <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[11px] font-bold text-brand-600">
+                      <Newspaper size={12} /> Oxu
+                      <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </span>
+                  </div>
+                </a>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ───────────────────────── PROJECTS ───────────────────────── */}
-      <section id="layiheler" className="scroll-mt-24 bg-canvas py-16 lg:py-24">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <Label>{PROJECTS.label}</Label>
-          <h2 className="mt-4 text-[28px] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[36px] lg:text-[44px]">
-            {PROJECTS.title}
-          </h2>
-          <p className="mt-3 max-w-[620px] text-[13px] leading-relaxed text-[#5A5270] lg:text-[14px]">
-            {PROJECTS.text}
-          </p>
+      <section id="layiheler" className="scroll-mt-24 bg-[#FAF9FF] py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <SectionHeading
+              label="04 / Böyük layihələr"
+              title="İdeyalar böyüyür. Üfüqlər genişlənir."
+              text="Elmi əlaqələrdən startap ekosisteminə — uzunmüddətli təsir üçün birlikdə."
+            />
+          </Reveal>
 
-          <div className="mt-9 grid grid-cols-1 gap-5 md:grid-cols-2 lg:mt-10 lg:gap-6">
-            {PROJECTS.items.map((project) =>
-              project.pending ? (
-                <article
-                  key={project.id}
-                  className="flex flex-col rounded-[20px] bg-[#EDEBF5] p-5 lg:rounded-[24px] lg:p-7"
-                >
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#7A7391]">
-                    {project.eyebrow}
-                  </p>
-                  <h3 className="mt-3 text-[19px] font-extrabold leading-[1.2] tracking-[-0.02em] text-ink lg:text-[24px]">
-                    {project.title}
-                  </h3>
-                  <p className="mt-3 max-w-[92%] text-[12.5px] leading-[1.75] text-[#5E5776]">
-                    {project.text}
-                  </p>
-                </article>
-              ) : (
-                <article
-                  key={project.id}
-                  className="group flex flex-col rounded-[20px] bg-white p-3 shadow-[0_2px_16px_rgba(32,26,63,0.04)] lg:rounded-[24px]"
-                >
-                  <div className="relative aspect-[2500/812] w-full overflow-hidden rounded-[14px] bg-[#101828]">
-                    <Image
-                      src={project.image as string}
-                      alt={project.title as string}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 620px"
-                      className="object-cover"
-                    />
-                    <span className="absolute left-[1.5%] top-[12%] flex h-[20%] w-[34%] items-center justify-center rounded-full bg-white text-[9px] font-semibold text-brand-600 lg:text-[12px]">
-                      {project.pill}
+          <div className="mt-9 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
+            {groups.project.slice(0, 6).map((project, index) => (
+              <Reveal key={project.id} delay={index * 70} as="article" className="h-full">
+                <div className="group flex h-full flex-col rounded-[24px] border border-[#EAE7F7] bg-white p-2.5 transition-all hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_32px_60px_-38px_rgba(32,26,63,0.55)] lg:rounded-[28px] lg:p-3">
+                  <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[16px] bg-[#101828] lg:rounded-[20px]">
+                    <MediaImage src={project.image} alt={project.title} className="transition-transform duration-500 group-hover:scale-[1.03]" />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/92 px-3 py-1 text-[9.5px] font-semibold text-brand-700 backdrop-blur">
+                      {project.subtitle || "Layihə"}
                     </span>
                   </div>
 
-                  <div className="flex flex-1 flex-col px-2 pb-1 pt-5 lg:px-4 lg:pt-6">
-                    <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-brand-600 lg:text-[9px]">
-                      {project.eyebrow}
-                    </p>
-                    <h3 className="mt-2 max-w-[92%] text-[19px] font-extrabold leading-[1.18] tracking-[-0.02em] text-ink lg:text-[25px]">
+                  <div className="flex flex-1 flex-col px-3 pb-2 pt-5 lg:px-4 lg:pt-6">
+                    <h3 className="text-[19px] font-extrabold leading-[1.18] tracking-[-0.025em] text-ink lg:text-[23px]">
                       {project.title}
                     </h3>
-                    <p className="mt-3 max-w-[95%] text-[12px] leading-[1.75] text-[#5A5270] lg:text-[13px]">
-                      {project.text}
-                    </p>
+                    {project.text && <p className="mt-2.5 text-[12px] leading-[1.75] text-[#5A5270] lg:text-[12.5px]">{project.text}</p>}
 
-                    <div className="mt-5">
-                      <p className="text-[11px] font-semibold text-ink lg:text-[12px]">{project.meta}</p>
-                      <p className="mt-1 text-[10px] text-[#8A83A0] lg:text-[11px]">{project.note}</p>
-                    </div>
+                    {project.meta && (
+                      <p className="mt-4 text-[11px] font-semibold leading-relaxed text-[#3E3171]">{project.meta}</p>
+                    )}
 
-                    <div className="mt-auto flex items-center justify-between border-t border-[#F1EFF8] pt-4 lg:pt-5">
-                      <span className="text-[11px] font-bold text-brand-600 lg:text-[12px]">
-                        {project.link}
-                      </span>
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EFECFE] text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white lg:h-9 lg:w-9">
-                        <ArrowUpRight size={15} strokeWidth={2.5} />
+                    <div className="mt-auto flex items-center justify-between border-t border-[#F3F1FA] pt-4">
+                      <a
+                        href={project.link || "#elaqe"}
+                        className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-brand-600 hover:text-brand-700"
+                      >
+                        Proqramla tanış ol <ArrowUpRight size={13} />
+                      </a>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1EEFE] text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+                        <Sparkles size={14} />
                       </span>
                     </div>
                   </div>
-                </article>
-              )
-            )}
+                </div>
+              </Reveal>
+            ))}
           </div>
-
-          <p className="mt-6 text-[10px] leading-relaxed text-[#8A83A0] lg:text-[11px]">
-            {PROJECTS.footnote}
-          </p>
         </div>
       </section>
 
       {/* ───────────────────────── OUTCOMES ───────────────────────── */}
-      <section className="bg-gradient-to-r from-[#3B2F6B] via-[#3F3273] to-[#4B3B7E] text-white">
-        <div className="mx-auto w-full max-w-[1376px] px-5 py-14 sm:px-8 lg:py-20">
-          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#B9ABEE] lg:text-[11px]">
-            {OUTCOMES.label}
-          </span>
-          <h2 className="mt-4 text-[28px] font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-[36px] lg:text-[42px]">
-            {OUTCOMES.title}
-          </h2>
-          <p className="mt-3 max-w-[560px] text-[12px] leading-relaxed text-[#CEC5EA] lg:text-[13px]">
-            {OUTCOMES.text}
-          </p>
+      <section className="dark-mesh relative overflow-hidden text-white">
+        <div className="mx-auto w-full max-w-[1320px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <Reveal>
+            <SectionHeading
+              label={OUTCOMES.label}
+              title={OUTCOMES.title}
+              text={OUTCOMES.text}
+              tone="dark"
+            />
+          </Reveal>
 
-          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8 lg:mt-12 lg:grid-cols-4 lg:gap-x-0">
-            {OUTCOMES.items.map((item) => (
-              <div key={item.label} className="lg:border-l lg:border-white/15 lg:pl-8">
-                <div className="text-[32px] font-extrabold leading-none tracking-[-0.03em] lg:text-[52px]">
+          <div className="mt-10 grid grid-cols-2 gap-x-5 gap-y-8 lg:mt-12 lg:grid-cols-4 lg:gap-x-0">
+            {OUTCOMES.items.map((item, index) => (
+              <Reveal key={item.label} delay={index * 70} className="lg:border-l lg:border-white/15 lg:pl-7">
+                <div className="text-[30px] font-extrabold leading-none tracking-[-0.035em] sm:text-[40px] lg:text-[52px]">
                   {item.value}
                 </div>
-                <p className="mt-2 max-w-[180px] text-[9px] uppercase leading-[1.6] tracking-[0.1em] text-[#C6BCE6] lg:text-[10px]">
+                <p className="mt-2 max-w-[190px] text-[9px] uppercase leading-[1.6] tracking-[0.1em] text-[#C6BCE6] lg:text-[10px]">
                   {item.label}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -296,54 +484,97 @@ export default function HomePage() {
 
       {/* ───────────────────────── ACTIVITIES ───────────────────────── */}
       <section className="bg-white py-16 lg:py-24">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <Label>{ACTIVITIES.label}</Label>
-          <h2 className="mt-4 text-[28px] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[36px] lg:text-[42px]">
-            {ACTIVITIES.title}
-          </h2>
-          <p className="mt-3 max-w-[520px] text-[13px] leading-relaxed text-[#5A5270] lg:text-[14px]">
-            {ACTIVITIES.text}
-          </p>
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <SectionHeading label={ACTIVITIES.label} title={ACTIVITIES.title} text={ACTIVITIES.text} />
+          </Reveal>
 
-          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-5">
-            {ACTIVITIES.items.map((item) => (
-              <article
-                key={item.title}
-                className="flex flex-col rounded-[18px] bg-[#F2F0FA] p-5 lg:rounded-[20px] lg:p-6"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-brand-600">
-                    {item.no}
-                  </span>
-                  <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-[#7A7391] lg:text-[9px]">
-                    {item.group}
-                  </span>
+          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+            {ACTIVITIES.items.map((item, index) => (
+              <Reveal key={item.title} delay={index * 60} as="article" className="h-full">
+                <div className="group flex h-full flex-col rounded-[20px] border border-[#EFEDF8] bg-[#FAF9FF] p-5 transition-all hover:-translate-y-1 hover:border-brand-200 hover:bg-white hover:shadow-[0_26px_48px_-36px_rgba(32,26,63,0.5)] lg:p-6">
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[10px] font-bold text-brand-600 shadow-sm">
+                      {item.no}
+                    </span>
+                    <span className="text-[8.5px] font-bold uppercase tracking-[0.14em] text-[#7A7391]">{item.group}</span>
+                  </div>
+                  <h3 className="mt-4 text-[18px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink lg:text-[20px]">{item.title}</h3>
+                  <p className="mt-2.5 text-[12px] leading-[1.7] text-[#5E5776]">{item.text}</p>
+                  <p className="mt-auto border-t border-[#E9E5F6] pt-3.5 text-[10.5px] text-[#6E6788]">{item.audience}</p>
                 </div>
-                <h3 className="mt-5 text-[19px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink lg:text-[21px]">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-[12px] leading-[1.7] text-[#5E5776]">{item.text}</p>
-                <p className="mt-auto border-t border-[#E2DEF0] pt-4 text-[10px] text-[#6E6788] lg:text-[11px]">
-                  {item.audience}
-                </p>
-              </article>
+              </Reveal>
             ))}
           </div>
 
-          <div className="mt-5 rounded-[18px] bg-[#F2F0FA] p-5 lg:rounded-[20px] lg:p-8">
-            <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-brand-600 lg:text-[9px]">
-              {ROTATION.label}
-            </p>
-            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-0 lg:mt-5">
-              {ROTATION.groups.map((group) => (
-                <div key={group.name} className="sm:border-l sm:border-[#DFDAEE] sm:pl-6 sm:first:border-l-0 sm:first:pl-0">
-                  <p className="text-[13px] font-bold text-ink lg:text-[14px]">
-                    {group.name}
-                    <span className="ml-2 text-[#9A93AE]">•</span>
-                    <span className="ml-2 font-medium text-[#4E4768]">{group.schedule}</span>
-                  </p>
-                  <p className="mt-2 text-[11px] text-[#7A7391] lg:text-[12px]">{group.months}</p>
-                </div>
+          <Reveal delay={100}>
+            <div className="mt-5 rounded-[20px] border border-[#EFEDF8] bg-[#FAF9FF] p-5 lg:p-8">
+              <p className="text-[8.5px] font-bold uppercase tracking-[0.16em] text-brand-600 lg:text-[9px]">{ROTATION.label}</p>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-0">
+                {ROTATION.groups.map((group) => (
+                  <div key={group.name} className="sm:border-l sm:border-[#DFDAEE] sm:pl-6 sm:first:border-l-0 sm:first:pl-0">
+                    <p className="text-[13px] font-bold text-ink lg:text-[14px]">
+                      {group.name}
+                      <span className="ml-2 text-[#9A93AE]">•</span>
+                      <span className="ml-2 font-medium text-[#4E4768]">{group.schedule}</span>
+                    </p>
+                    <p className="mt-1.5 text-[11px] text-[#7A7391] lg:text-[12px]">{group.months}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ───────────────────────── MEMBERSHIP ───────────────────────── */}
+      <section id="uzvluk" className="scroll-mt-24 bg-[#FAF9FF] py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14">
+            <Reveal>
+              <SectionHeading
+                label="Üzvlük proqramı"
+                title="Komandaya qoşulmağın 3 sadə addımı."
+                text="Elmi maraq və komanda ilə iş bacarığı əsas meyardır. Müraciətdən sonra sizi uyğun qrupa yönləndiririk."
+              />
+              <div className="mt-7 flex flex-wrap gap-2.5">
+                <Link
+                  href="/muraciet"
+                  className="group inline-flex h-11 items-center gap-2 rounded-full bg-brand-600 px-5 text-[12px] font-bold text-white transition-colors hover:bg-brand-700"
+                >
+                  Müraciət et
+                  <ArrowUpRight size={15} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </Link>
+                <a
+                  href="#fealiyyet"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-[#E4E0F2] bg-white px-5 text-[12px] font-bold text-ink transition-colors hover:border-brand-200 hover:text-brand-700"
+                >
+                  Fəaliyyət planı <ArrowRight size={14} />
+                </a>
+              </div>
+            </Reveal>
+
+            <div className="space-y-3">
+              {groups.membership.slice(0, 5).map((step, index) => (
+                <Reveal key={step.id} delay={index * 70}>
+                  <div className="group flex items-start gap-4 rounded-2xl border border-[#EAE7F7] bg-white p-4 transition-all hover:border-brand-200 hover:shadow-[0_22px_44px_-34px_rgba(32,26,63,0.5)] sm:p-5">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#EFEBFF] to-[#E1DBFF] text-[13px] font-extrabold text-brand-700">
+                      {step.subtitle || String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-[14px] font-bold text-ink">{step.title}</h3>
+                        {step.meta && (
+                          <span className="rounded-full bg-[#F4F2FC] px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-brand-700">
+                            {step.meta}
+                          </span>
+                        )}
+                      </div>
+                      {step.text && <p className="mt-1.5 text-[11.5px] leading-[1.7] text-[#5A5270]">{step.text}</p>}
+                    </div>
+                    <Check size={15} className="ml-auto mt-1 shrink-0 text-emerald-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -351,76 +582,75 @@ export default function HomePage() {
       </section>
 
       {/* ───────────────────────── ROADMAP ───────────────────────── */}
-      <section id="fealiyyet" className="scroll-mt-24 bg-canvas py-16 lg:py-24">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <Label>{ROADMAP.label}</Label>
-          <h2 className="mt-4 text-[28px] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[36px] lg:text-[44px]">
-            {ROADMAP.title}
-          </h2>
-          <p className="mt-3 max-w-[560px] text-[13px] leading-relaxed text-[#5A5270] lg:text-[14px]">
-            {ROADMAP.text}
-          </p>
+      <section id="fealiyyet" className="scroll-mt-24 bg-white py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <SectionHeading
+              label="05 / Fəaliyyət planı"
+              title="9 ay. Ortaq məqsəd. Aydın yol xəritəsi."
+              text="İyul 2026 – Mart 2027 üçün planlaşdırılmış mərhələlər və növbəti fəaliyyətlər."
+            />
+          </Reveal>
 
-          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 lg:gap-5">
-            {ROADMAP.months.map((month) => (
-              <article
-                key={month.month}
-                className="flex flex-col rounded-[18px] bg-white p-5 lg:rounded-[20px] lg:p-6"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-brand-600 lg:text-[9px]">
-                    {month.month}
-                  </span>
-                  <span className="text-[9px] text-[#A29BB6] lg:text-[10px]">{month.year}</span>
+          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+            {groups.plan.slice(0, 12).map((month, index) => (
+              <Reveal key={month.id} delay={(index % 3) * 60} as="article" className="h-full">
+                <div className="group flex h-full flex-col rounded-[20px] border border-[#EFEDF8] bg-[#FAF9FF] p-5 transition-all hover:-translate-y-1 hover:border-brand-200 hover:bg-white hover:shadow-[0_26px_48px_-36px_rgba(32,26,63,0.5)] lg:p-6">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-brand-600">
+                      {month.subtitle || `Ay ${index + 1}`}
+                    </span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-brand-300 group-hover:bg-brand-600" />
+                  </div>
+                  <h3 className="mt-3 text-[16.5px] font-bold leading-[1.25] tracking-[-0.01em] text-ink lg:text-[18px]">
+                    {month.title}
+                  </h3>
+                  {month.text && <p className="mt-2 text-[11.5px] leading-[1.7] text-[#5E5776] lg:text-[12.5px]">{month.text}</p>}
+                  {month.meta && (
+                    <div className="mt-auto pt-4">
+                      <span className="inline-block rounded-full bg-[#F0EDFB] px-3 py-1.5 text-[9.5px] leading-snug text-[#575070] lg:text-[10.5px]">
+                        {month.meta}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <h3 className="mt-4 text-[17px] font-bold leading-[1.25] tracking-[-0.01em] text-ink lg:text-[19px]">
-                  {month.title}
-                </h3>
-                <p className="mt-2.5 text-[11.5px] leading-[1.7] text-[#5E5776] lg:text-[12.5px]">
-                  {month.text}
-                </p>
-                <div className="mt-auto pt-5">
-                  <span className="block w-full rounded-full bg-[#EFEDF8] px-3 py-1.5 text-[9.5px] leading-snug text-[#575070] lg:text-[10.5px]">
-                    {month.tag}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-8 space-y-2">
-            {ROADMAP.notes.map((note) => (
-              <p key={note} className="text-[10px] leading-relaxed text-[#8A83A0] lg:text-[11px]">
-                {note}
-              </p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ───────────────────────── CTA ───────────────────────── */}
-      <section className="bg-white py-12 lg:py-20">
-        <div className="mx-auto w-full max-w-[1376px] px-5 sm:px-8">
-          <div className="flex flex-col items-start gap-8 rounded-[20px] bg-[#EFEDF8] px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:rounded-[24px] lg:px-12 lg:py-12">
-            <div className="max-w-[760px]">
-              <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-brand-600 lg:text-[10px]">
-                {CTA.label}
-              </span>
-              <h2 className="mt-3 text-[24px] font-extrabold leading-[1.12] tracking-[-0.03em] text-ink sm:text-[32px] lg:text-[40px]">
-                {CTA.title}
-              </h2>
-              <p className="mt-3 text-[12px] leading-relaxed text-[#5E5776] lg:text-[13px]">
-                {CTA.text}
-              </p>
+      <section className="bg-white pb-14 lg:pb-20">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#F1EEFE] via-[#EBE6FE] to-[#E4DDFD] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+              <div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-white/50 blur-3xl" />
+              <div className="relative flex flex-col items-start gap-7 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-[720px]">
+                  <Label>{CTA.label}</Label>
+                  <h2 className="mt-3 text-[24px] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[32px] lg:text-[40px]">
+                    {CTA.title}
+                  </h2>
+                  <p className="mt-3 text-[12.5px] leading-relaxed text-[#5E5776] lg:text-[13.5px]">{CTA.text}</p>
+                </div>
+                <Link
+                  href="#layiheler"
+                  className="group inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-ink px-6 text-[12.5px] font-bold text-white transition-colors hover:bg-[#2E2552]"
+                >
+                  {CTA.button}
+                  <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </Link>
+              </div>
             </div>
-            <Link
-              href="#layiheler"
-              className="group inline-flex h-[52px] shrink-0 items-center gap-2 rounded-full bg-brand-600 px-7 text-[13px] font-bold text-white transition-colors hover:bg-brand-700"
-            >
-              {CTA.button}
-              <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Link>
-          </div>
+          </Reveal>
+
+          <Reveal delay={80}>
+            <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-[#8A83A0]">
+              <Quote size={13} className="text-brand-400" />
+              Araşdırırıq. Yaradırıq. Dəyişirik.
+            </div>
+          </Reveal>
         </div>
       </section>
 

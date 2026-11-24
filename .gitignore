@@ -26,6 +26,9 @@ yarn-error.log*
 .env*.local
 .env
 
+# secret-bearing local notes
+/info.txt
+
 # vercel
 .vercel
 

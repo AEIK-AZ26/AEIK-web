@@ -19,10 +19,14 @@ function verifyPassword(password, hashed) {
 
 /** Mövcud Next.js tokeni ilə eyni payload — tokenlər qarşılıqlı işləyir. */
 function signToken(payload) {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET mühit dəyişəni təyin edilməyib.');
+  }
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
 }
 
 function verifyToken(token) {
+  if (!JWT_SECRET) return null;
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (_) {

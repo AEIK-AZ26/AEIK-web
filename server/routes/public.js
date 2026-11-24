@@ -52,4 +52,26 @@ router.get(
   })
 );
 
+// GET /api/v1/public/content — ana səhifə məzmunu (yalnız dərc olunmuşlar)
+router.get(
+  '/content',
+  wrap(async (req, res) => {
+    const db = await getDb();
+    if (!db) return res.status(503).json({ connected: false, data: [], message: 'MongoDB konfiqurasiya edilməyib.' });
+
+    const filter = { status: { $ne: 'draft' } };
+    if (typeof req.query.sec === 'string' && req.query.sec !== '') filter.sec = req.query.sec;
+
+    const docs = await db
+      .collection('sitecontents')
+      .find(filter, { projection: { _id: 0, __v: 0 } })
+      .sort({ order: 1, ts: -1 })
+      .limit(300)
+      .toArray();
+
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    res.json({ connected: true, data: docs, count: docs.length });
+  })
+);
+
 module.exports = router;

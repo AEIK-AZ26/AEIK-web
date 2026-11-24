@@ -43,6 +43,17 @@ const RESOURCES = {
     fields: ['linkId', 'url'],
     sort: { linkId: 1 },
   },
+  // Sayt məzmunu (menecer paneli) — Next.js tərəfi ilə eyni kolleksiya.
+  siteContent: {
+    collection: 'sitecontents',
+    idPrefix: 'sc',
+    idField: 'id',
+    fields: [
+      'id', 'sec', 'title', 'subtitle', 'text', 'body', 'image', 'link',
+      'date', 'status', 'order', 'meta', 'ts',
+    ],
+    sort: { order: 1, ts: -1 },
+  },
   items: {
     collection: 'items',
     idPrefix: 'it',

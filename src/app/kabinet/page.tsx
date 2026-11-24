@@ -12,7 +12,9 @@ import {
   Award, 
   Users2, 
   CheckSquare, 
-  StickyNote
+  StickyNote,
+  ChevronDown,
+  CheckCircle2
 } from "lucide-react";
 import KabinetHeader from "@/components/kabinet/KabinetHeader";
 import ReportsView from "@/components/kabinet/ReportsView";
@@ -74,6 +76,7 @@ const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
 export default function KabinetPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("reports");
+  const [tabMenuOpen, setTabMenuOpen] = useState(false);
   const [state, setState] = useState<AppState | null>(null);
   const [isMongoConnected, setIsMongoConnected] = useState(false);
   const [currentUser, setCurrentUser] = useState<{
@@ -171,8 +174,11 @@ export default function KabinetPage() {
         delete nextAtt[key];
         syncToBackend("att", "delete", key);
       } else {
-        const [m, moStr] = key.split("_");
-        const rec = { v: nextVal, m, mo: Number(moStr) };
+        const parts = key.split("_");
+        const mo = Number(parts[parts.length - 1]) || 0;
+        const year = parts.length > 2 ? Number(parts[1]) : undefined;
+        const m = parts[0];
+        const rec = { v: nextVal, m, mo, ...(year ? { year } : {}) };
         nextAtt[key] = rec;
         syncToBackend("att", "save", key, rec);
       }
@@ -298,9 +304,63 @@ export default function KabinetPage() {
       />
 
       {/* Main Tab Navigation Bar */}
-      <div className="bg-white border-b border-purple-100 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-1.5 overflow-x-auto py-2.5 scrollbar-none">
+      <div className="border-b border-purple-100 bg-white shadow-2xs">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          {/* Mobil: keçidlər dropdown kimi */}
+          <div className="relative py-2.5 sm:hidden">
+            {(() => {
+              const current = TABS.find((tab) => tab.key === activeTab) || TABS[0];
+              const CurrentIcon = current.icon;
+              return (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setTabMenuOpen((v) => !v)}
+                    aria-expanded={tabMenuOpen}
+                    className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-[#E4E0F2] bg-white px-3 text-[12px] font-semibold text-slate-700"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <CurrentIcon size={15} className="shrink-0 text-brand-600" />
+                      <span className="truncate">{current.label}</span>
+                    </span>
+                    <ChevronDown size={15} className={`shrink-0 text-slate-400 transition-transform ${tabMenuOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {tabMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setTabMenuOpen(false)} />
+                      <div className="absolute inset-x-0 top-[52px] z-40 max-h-[60vh] overflow-y-auto rounded-2xl border border-[#EAE7F7] bg-white p-1.5 shadow-2xl">
+                        {TABS.map((tab) => {
+                          const Icon = tab.icon;
+                          const isActive = activeTab === tab.key;
+                          return (
+                            <button
+                              key={tab.key}
+                              type="button"
+                              onClick={() => {
+                                setActiveTab(tab.key);
+                                setTabMenuOpen(false);
+                              }}
+                              className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[12px] font-semibold transition-colors ${
+                                isActive ? "bg-brand-600 text-white" : "text-slate-700 hover:bg-[#F4F2FC] hover:text-brand-700"
+                              }`}
+                            >
+                              <Icon size={15} className="shrink-0" />
+                              <span className="flex-1 truncate">{tab.label}</span>
+                              {isActive && <CheckCircle2 size={14} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Tablet/desktop: pill naviqasiya */}
+          <nav className="hidden space-x-1.5 overflow-x-auto py-2.5 scrollbar-none sm:flex">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.key;
@@ -309,7 +369,7 @@ export default function KabinetPage() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                     isActive
                       ? "bg-brand-600 text-white shadow-xs"
                       : "text-slate-600 hover:text-brand-600 hover:bg-purple-50"

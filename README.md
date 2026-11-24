@@ -21,10 +21,26 @@ Vercel-də hər ikisi **tək layihə** kimi yayımlanır: Next.js səhifələri 
 | `/login` | Email və şifrə ilə giriş |
 | `/kabinet` | İdarə heyəti kabineti (10 modul) |
 | `/kabinet/users` | İstifadəçi və rol idarəetməsi (owner/admin) |
+| `/menecer` | Sayt məzmununun idarəsi — elanlar, xəbərlər, üzvlük, layihələr, haqqımızda, fəaliyyət planı (owner/admin) |
 
 ### Kabinet modulları
 
 Hesabatlar, davamiyyət, layihələr, təqvim, post planı, əməkdaşlıq, nəticələr, iclaslar, tapşırıqlar və qeydlər — hər modul üçün məlumat `items` kolleksiyasında `sec` sahəsi ilə saxlanılır.
+
+### Menecer paneli (`/menecer`)
+
+Owner/admin rolları üçün ayrıca idarəetmə paneli. Bütün CRUD əməliyyatları bir yerdə:
+
+| Bölmə | Nə idarə olunur |
+|---|---|
+| Elanlar | Başlıq, mətn, tarix, keçid, şəkil, sıra, dərc/qaralama |
+| Xəbərlər | Eyni sahələr + şəkil |
+| Üzvlük proqramı | Addımlar (başlıq, mətn, müddət, sıra) |
+| Layihələr | Layihə kartı (başlıq, alt başlıq, mətn, şəkil, keçid) |
+| Haqqımızda | Tək qeyd: başlıq, mətn, bəndlər, şəkil |
+| Fəaliyyət planı | Aylıq mərhələlər (ay, mətn, etiket, sıra) |
+
+Məzmun `sitecontents` kolleksiyasında saxlanılır (`/api/content`). Şəkillər imgbb-yə server tərəfindən yüklənir (`/api/upload`), API əlçatmaz olduqda ana səhifə `src/lib/siteContent.ts` faylındakı statik məzmuna və `public/assets` şəkillərinə keçir.
 
 ### Rollar
 
@@ -101,10 +117,11 @@ curl http://localhost:4000/api/v1/health
 | `MONGODB_DB` | yox | Baza adı (URI-də göstərilməyibsə) |
 | `JWT_SECRET` | bəli | Token imzalama açarı (uzun və təsadüfi) |
 | `CORS_ORIGINS` | yox | İcazəli origin-lər, vergüllə. Default: `https://aeik.vercel.app`, `http://localhost:3000` |
+| `IMGBB_API_KEY` | şəkil yükləmə üçün bəli | imgbb açarı (menecer paneli). Kodda fallback açar yoxdur — boş olsa `/api/upload` 503 qaytarır |
 | `NEXT_PUBLIC_APP_URL` | yox | Saytın tam ünvanı (canonical/OpenGraph üçün) |
 | `PORT` | yox | Lokal API portu (default `4000`) |
 
-> `.env` faylı `.gitignore`-dadır — real açarlar heç vaxt repoya düşməməlidir.
+> `.env`, `.env.local` və `info.txt` `.gitignore`-dadır — real açarlar yalnız mühit fayllarında saxlanılır və heç vaxt repoya düşməməlidir.
 
 ---
 

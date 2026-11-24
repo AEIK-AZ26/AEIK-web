@@ -23,6 +23,7 @@ import {
   ShieldAlert,
   X
 } from "lucide-react";
+import { formatDate } from "@/lib/siteContent";
 import { UserRole } from "@/types";
 
 interface ManagedUser {
@@ -498,7 +499,7 @@ export default function UserManagementPage() {
                           {renderRoleBadge(u.role)}
                         </td>
                         <td className="py-3.5 px-5 text-slate-400 text-[11px]">
-                          {u.createdAt ? new Date(u.createdAt).toLocaleDateString("az-AZ") : "—"}
+                          {u.createdAt ? formatDate(String(u.createdAt)) : "—"}
                         </td>
                         <td className="py-3.5 px-5 text-right">
                           <div className="flex items-center justify-end gap-1.5">

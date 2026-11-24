@@ -3,12 +3,15 @@
 // Lokal (ayrıca) server üçün giriş nöqtəsi:  node server/index.js
 // Vercel-də bu fayl işlədilmir — orada api/ qovluğundakı funksiya app-i ixrac edir.
 const app = require('./app');
-const { PORT, isDbConfigured } = require('./config');
+const { PORT, isDbConfigured, isJwtConfigured } = require('./config');
 const { disconnectFromMongoDB, ensureReady } = require('./db');
 
 async function start() {
   if (!isDbConfigured()) {
     console.warn('[aeik-api] MONGODB_URI təyin edilməyib və ya placeholder-dir — baza endpoint-ləri 503 qaytaracaq.');
+  }
+  if (!isJwtConfigured) {
+    console.warn('[aeik-api] JWT_SECRET təyin edilməyib — auth endpoint-ləri işləməyəcək.');
   }
 
   await ensureReady();

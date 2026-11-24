@@ -11,11 +11,11 @@ try {
 }
 
 const DEFAULT_DB_NAME = 'aeik_database';
-const DEFAULT_JWT_SECRET = 'aeik_default_jwt_secret_change_in_env_2026';
 
 const MONGODB_URI = (process.env.MONGODB_URI || '').trim();
 const MONGODB_DB = (process.env.MONGODB_DB || process.env.MONGODB_DATABASE || '').trim();
-const JWT_SECRET = (process.env.JWT_SECRET || DEFAULT_JWT_SECRET).trim();
+// Açar yalnız mühit dəyişənindən gəlir; kodda fallback saxlanmır.
+const JWT_SECRET = (process.env.JWT_SECRET || '').trim();
 const PORT = Number(process.env.PORT) || 4000;
 const API_VERSION = '1.0.0';
 
@@ -80,6 +80,7 @@ module.exports = {
   JWT_SECRET,
   MONGODB_URI,
   PORT,
+  isJwtConfigured: Boolean(JWT_SECRET),
   dbNameFromUri,
   isDbConfigured,
   isOriginAllowed,

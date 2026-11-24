@@ -34,6 +34,7 @@ body {
   background-color: #FFFFFF;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Custom scrollbars */
@@ -65,4 +66,86 @@ body {
 .card-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 28px -6px rgba(101, 82, 245, 0.12);
+}
+
+/* ── Scroll reveal ─────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Premium surface helpers ───────────────────────────────────── */
+.premium-shadow {
+  box-shadow:
+    0 1px 2px rgba(32, 26, 63, 0.04),
+    0 18px 48px -22px rgba(32, 26, 63, 0.28);
+}
+
+.premium-shadow-soft {
+  box-shadow: 0 10px 30px -18px rgba(32, 26, 63, 0.22);
+}
+
+.hero-mesh {
+  background:
+    radial-gradient(58% 62% at 82% 6%, rgba(124, 103, 247, 0.22) 0%, rgba(124, 103, 247, 0) 60%),
+    radial-gradient(46% 52% at 6% 14%, rgba(101, 82, 245, 0.16) 0%, rgba(101, 82, 245, 0) 64%),
+    linear-gradient(180deg, #FBFAFF 0%, #F6F4FF 58%, #FFFFFF 100%);
+}
+
+.dark-mesh {
+  background:
+    radial-gradient(60% 70% at 88% 0%, rgba(124, 103, 247, 0.42) 0%, rgba(124, 103, 247, 0) 62%),
+    radial-gradient(50% 60% at 4% 96%, rgba(101, 82, 245, 0.34) 0%, rgba(101, 82, 245, 0) 66%),
+    linear-gradient(135deg, #1B1533 0%, #241C46 52%, #2C2354 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(96deg, #6552F5 0%, #8F7BFF 46%, #4B3B7E 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hairline {
+  background: linear-gradient(90deg, rgba(226, 222, 246, 0) 0%, #E2DEF6 22%, #E2DEF6 78%, rgba(226, 222, 246, 0) 100%);
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float-soft {
+  animation: float-soft 7s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2.4s ease-in-out infinite;
 }

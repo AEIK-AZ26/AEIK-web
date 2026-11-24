@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [nextPath, setNextPath] = useState("/kabinet");
+
+  // /login?next=/menecer — girişdən sonra istifadəçini həmin səhifəyə qaytarır.
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    if (next && next.startsWith("/") && !next.startsWith("//")) setNextPath(next);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +43,7 @@ export default function LoginPage() {
       localStorage.setItem("aeik_user", JSON.stringify(data.user));
       if (data.token) localStorage.setItem("aeik_token", data.token);
 
-      router.push("/kabinet");
+      router.push(nextPath);
     } catch (err: any) {
       console.error("Login fetch error:", err);
       setError("Serverlə əlaqə qurulmadı. Zəhmət olmasa interneti və ya bazanı yoxlayın.");

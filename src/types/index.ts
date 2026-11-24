@@ -20,6 +20,7 @@ export interface AttendanceRecord {
   v: '+' | '-' | '';
   m: string; // member id
   mo: number; // month 0-11
+  year?: number; // davamiyyət ili
 }
 
 export interface DriveLinks {
