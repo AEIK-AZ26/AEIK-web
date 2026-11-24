@@ -145,7 +145,9 @@ body {
 /* ── Content carousel (Swiper) ──────────────────────────────────── */
 .content-swiper .swiper {
   overflow: hidden;
-  padding-bottom: 2px;
+  /* Kartların hover kölgəsi və yuxarı qalxması kəsilməsin deyə klip sahəsinə yer veririk */
+  padding: 10px 0 16px;
+  margin: -10px 0 -14px;
 }
 .content-swiper .swiper-slide {
   height: auto;

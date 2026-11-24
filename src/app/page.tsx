@@ -222,10 +222,6 @@ export default function HomePage() {
                 )}
               </div>
 
-              <div className="absolute -bottom-5 -left-3 hidden animate-float-soft rounded-2xl border border-[#EAE7F7] bg-white px-4 py-3 shadow-[0_22px_44px_-26px_rgba(32,26,63,0.45)] sm:block">
-                <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8A83A0]">Aktiv proqram</p>
-                <p className="mt-0.5 text-[13px] font-extrabold text-ink">{groups.project.length} layihə · {groups.plan.length} ay</p>
-              </div>
             </Reveal>
           </div>
 

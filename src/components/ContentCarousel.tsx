@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useId } from "react";
+import React, { useId, useState } from "react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperClass } from "swiper";
 import { A11y, Keyboard, Navigation, Pagination } from "swiper/modules";
 import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarDays, Newspaper, Sparkles } from "lucide-react";
 import { FALLBACK_IMAGE, SiteItem, SiteSection, formatDate } from "@/lib/siteContent";
@@ -180,15 +181,29 @@ export default function ContentCarousel({ items, variant, className = "" }: Cont
   const nextId = `${uid}-next`;
   const dotsId = `${uid}-dots`;
 
+  // Bütün slaydlar bir ekrana sığanda Swiper naviqasiyanı "kilidləyir" və
+  // düymələri gizlədir — boş idarəetmə sətri qalmasın deyə onu biz də gizlədirik.
+  const [locked, setLocked] = useState<boolean | null>(null);
+
   if (!items.length) return null;
 
   const Card = variant === "announcement" ? AnnouncementCard : variant === "news" ? NewsCard : ProjectCard;
   // 4-dən çox olduqda sonsuz (infinite) dövrə.
   const loop = items.length > 4;
 
+  const handleSwiper = (instance: SwiperClass) => {
+    const sync = () => setLocked(instance.isLocked);
+    sync();
+    ["lock", "unlock", "resize", "breakpoint", "update"].forEach((event) =>
+      instance.on(event as never, sync)
+    );
+  };
+
   return (
     <div className={`content-swiper ${className}`}>
       <Swiper
+        key={items.length}
+        onSwiper={handleSwiper}
         modules={[Navigation, Pagination, A11y, Keyboard]}
         breakpoints={BREAKPOINTS[variant]}
         slidesPerView={1}
@@ -200,7 +215,11 @@ export default function ContentCarousel({ items, variant, className = "" }: Cont
         keyboard={{ enabled: true }}
         navigation={{ prevEl: `#${prevId}`, nextEl: `#${nextId}` }}
         pagination={{ el: `#${dotsId}`, clickable: true }}
-        a11y={{ prevSlideMessage: "Əvvəlki", nextSlideMessage: "Növbəti" }}
+        a11y={{
+          prevSlideMessage: "Əvvəlki",
+          nextSlideMessage: "Növbəti",
+          paginationBulletMessage: "Slayd {{index}}",
+        }}
       >
         {items.map((item) => (
           <SwiperSlide key={item.id} className="!h-auto pb-1">
@@ -209,6 +228,7 @@ export default function ContentCarousel({ items, variant, className = "" }: Cont
         ))}
       </Swiper>
 
+      {locked === false && (
       <div className="mt-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <button
@@ -230,6 +250,7 @@ export default function ContentCarousel({ items, variant, className = "" }: Cont
         </div>
         <div id={dotsId} className="flex flex-1 items-center justify-end" />
       </div>
+      )}
     </div>
   );
 }
