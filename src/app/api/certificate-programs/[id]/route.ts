@@ -52,7 +52,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
   if (body.active !== undefined) update.active = body.active === true;
 
-  if (body.theme !== undefined || body.elements !== undefined || body.frameColor !== undefined || body.accentColor !== undefined || body.logoUrl !== undefined) {
+  if (
+    body.theme !== undefined ||
+    body.elements !== undefined ||
+    body.frameColor !== undefined ||
+    body.accentColor !== undefined ||
+    body.logoUrl !== undefined ||
+    body.logoUrls !== undefined
+  ) {
     Object.assign(update, designFromBody(body));
   }
 

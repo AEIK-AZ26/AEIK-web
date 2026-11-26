@@ -132,6 +132,8 @@ export async function POST(req: Request) {
       guests: parseGuests(body.guests),
       active: body.active === true,
       ...design,
+      // Köhnə model versiyasında `templateUrl` tələb olunurdu — dizayn artıq şablon şəkil istifadə etmir.
+      templateUrl: '',
       ts: Date.now(),
       updatedAt: Date.now(),
     });

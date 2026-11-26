@@ -65,7 +65,7 @@ const CertificateProgramSchema = new Schema<ICertificateProgram>({
   logoUrl: { type: String, default: '' },
   logoUrls: { type: [String], default: [] },
   elements: { type: [ElementSchema], default: [] },
-  templateUrl: { type: String, default: '' },
+  templateUrl: { type: String, default: '', required: false },
   ts: { type: Number, default: () => Date.now() },
   updatedAt: { type: Number, default: () => Date.now() },
 });

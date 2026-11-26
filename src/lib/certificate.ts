@@ -45,6 +45,8 @@ export type CertificateBoxes = Partial<Record<ElementKey, CertificateBox>>;
 /** Şablon/loqo şəklini eyni mənşəli proxy üzərindən yükləyirik ki, canvas “taint” olmasın. */
 export function certificateImageProxy(url: string): string {
   if (!url) return "";
+  // Sayt daxilindəki şəkillər (məs. /assets/...) artıq eyni mənşədədir — proxy lazım deyil.
+  if (url.startsWith("/")) return url;
   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 

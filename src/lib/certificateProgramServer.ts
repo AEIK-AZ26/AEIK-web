@@ -6,16 +6,19 @@ import {
   sanitizeTheme,
 } from './certificateConfig';
 
+/** https URL-lər və sayt daxilindəki (/assets/...) şəkil yolları qəbul edilir. */
+const isLogoSource = (value: string): boolean => /^(https?:\/\/\S+|\/[^\s]*)$/i.test(value);
+
 const cleanLogoUrl = (value: unknown): string => {
   const url = String(value || '').trim();
-  return /^https?:\/\/\S+$/i.test(url) ? url.slice(0, 500) : '';
+  return isLogoSource(url) ? url.slice(0, 500) : '';
 };
 
 const cleanLogoUrls = (value: unknown): string[] => {
   const list = Array.isArray(value) ? value : String(value || '').split(/[\n,;]+/);
   return list
     .map((item) => String(item).trim())
-    .filter((item) => /^https?:\/\/\S+$/i.test(item))
+    .filter((item) => isLogoSource(item))
     .map((item) => item.slice(0, 500))
     .slice(0, 12);
 };

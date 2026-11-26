@@ -284,7 +284,7 @@ export function sanitizeElements(input: unknown): CertificateElement[] {
     const align = raw.align === "left" || raw.align === "right" || raw.align === "center" ? raw.align : base.align;
     const weight = WEIGHTS.includes(Number(raw.weight)) ? Number(raw.weight) : base.weight;
     const imageUrl = typeof raw.imageUrl === "string" ? raw.imageUrl.trim().slice(0, 500) : "";
-    const cleanImageUrl = /^https?:\/\/\S+$/i.test(imageUrl) ? imageUrl : "";
+    const cleanImageUrl = /^(https?:\/\/\S+|\/[^\s]*)$/i.test(imageUrl) ? imageUrl : "";
     return {
       key,
       text: typeof raw.text === "string" ? raw.text.slice(0, 500) : base.text,

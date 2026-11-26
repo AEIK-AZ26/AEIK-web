@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Camera, FileText, Linkedin, Mail, PenLine, Users } from "lucide-react";
 import { PageCTA, PageHero, PageShell, Section } from "@/components/PageShell";
@@ -10,6 +11,37 @@ export const metadata: Metadata = {
     "AEİK komandası: vahid profil formatı, açıq rollar (könüllü, mentor, rəyçi) və komandaya qoşulma qaydaları.",
   alternates: { canonical: "/komanda" },
 };
+
+const LEADERSHIP = [
+  {
+    name: "Nərhiz Hacıllı",
+    role: "Layihə rəhbəri",
+    project: "Bakı və Region Gənclərinin II Elmi Konfransı",
+    image: "/assets/team/nerhiz-hacilli.jpg",
+    text: "Konfransın ümumi planını, tərəfdaşlarla əlaqəni və komandalar arasında koordinasiyanı idarə edir.",
+  },
+  {
+    name: "Gülçin Mirzayeva",
+    role: "Kimya Forumu üzrə rəhbər",
+    project: "Kimya Forumu",
+    image: "/assets/team/gulcin-mirzayeva.jpg",
+    text: "Kimya və biotexnologiya istiqamətində forum proqramını, spikerləri və iştirakçı seçimini idarə edir.",
+  },
+  {
+    name: "Cavid Quluyev",
+    role: "DNT Günü üzrə rəhbər",
+    project: "DNT Günü",
+    image: "/assets/team/cavid-quluyev.jpg",
+    text: "Beynəlxalq DNT Günü çərçivəsində tədbir proqramını və genetika üzrə mütəxəssislərlə əlaqəni koordinasiya edir.",
+  },
+  {
+    name: "Nərgiz İsmayılova",
+    role: "DNT Günü üzrə koordinator",
+    project: "DNT Günü",
+    image: "/assets/team/nergiz-ismayilova.jpg",
+    text: "Laboratoriya turleri, könüllü komandası və iştirakçı qeydiyyatı prosesinə cavabdehdir.",
+  },
+];
 
 const ROLES = [
   {
@@ -48,6 +80,48 @@ export default function TeamPage() {
         title="Komandanın hər üzvü eyni formatda."
         text="AEİK könüllülərdən, mentorlardan və rəyçilərdən ibarətdir. Bütün profillər vahid formatda təqdim olunur ki, iştirakçılar və tərəfdaşlar komandanı asan tanısın."
       />
+
+      <Section eyebrow="Layihə rəhbərliyi" title="Layihələri idarə edən komanda">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {LEADERSHIP.map((leader) => (
+            <article
+              key={leader.name}
+              className="group flex flex-col overflow-hidden rounded-[22px] border border-[#EAE7F7] bg-white transition-shadow hover:premium-shadow-soft"
+            >
+              <div className="relative aspect-square w-full overflow-hidden bg-[#F4F2FC]">
+                <Image
+                  src={leader.image}
+                  alt={leader.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.1em] text-brand-700 backdrop-blur">
+                  {leader.role}
+                </span>
+              </div>
+              <div className="flex flex-1 flex-col p-4">
+                <p className="text-[13.5px] font-extrabold tracking-[-0.01em] text-ink">{leader.name}</p>
+                <p className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-brand-600">
+                  {leader.project}
+                </p>
+                <p className="mt-2 flex-1 text-[11.5px] leading-[1.75] text-[#5E5776]">{leader.text}</p>
+                <a
+                  href={`mailto:${CONTACT.email}?subject=${encodeURIComponent(`${leader.name} — ${leader.project}`)}`}
+                  className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-600 hover:text-brand-700"
+                >
+                  <Mail size={12} /> Əlaqə saxla
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-[#8A83A0]">
+          <Users size={13} className="mt-0.5 shrink-0 text-brand-600" />
+          Layihə rəhbərləri könüllü komandaları və mentorları koordinasiya edir. Profil məlumatlarında dəyişiklik üçün{" "}
+          {CONTACT.email} ünvanına yazın.
+        </p>
+      </Section>
 
       <Section>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-12">

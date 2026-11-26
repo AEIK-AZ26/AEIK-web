@@ -6,11 +6,15 @@ import {
   AlignLeft,
   AlignRight,
   Award,
+  Check,
+  ChevronDown,
+  ChevronUp,
   Copy,
   ExternalLink,
   Eye,
   EyeOff,
   ImagePlus,
+  Images,
   Link2,
   Loader2,
   Move,
@@ -25,6 +29,7 @@ import {
   X,
 } from "lucide-react";
 import { uploadImage } from "@/lib/contentApi";
+import { IMGBB_LIBRARY, LOCAL_IMAGES } from "@/lib/siteContent";
 import {
   AUTO_ELEMENTS,
   CertificateBox,
@@ -48,6 +53,21 @@ import {
 
 const SAMPLE_NAME = "Aysel Məmmədova";
 const SAMPLE_CODE = "AEIK-2026-ABC123";
+const SAMPLE_GUESTS = ["Dr. Elvin Cəfərov", "Prof. Leyla Əliyeva"];
+/** Bir sertifikatda göstərilə bilən maksimum loqo sayı (server də 12 limiti tətbiq edir). */
+const MAX_LOGOS = 12;
+
+/** Yeni loqo URL-lərini mövcud siyahıya təkrarsız əlavə edir (limit daxilində). */
+function mergeLogos(current: string[], add: string[]): string[] {
+  const next = Array.isArray(current) ? [...current] : [];
+  for (const value of add) {
+    const url = String(value || "").trim();
+    if (!url) continue;
+    if (!/^https?:\/\/\S+$/i.test(url) && !url.startsWith("/")) continue;
+    if (!next.includes(url)) next.push(url);
+  }
+  return next.slice(0, MAX_LOGOS);
+}
 
 interface AdminProgram extends CertificateProgram {
   id: string;
@@ -114,7 +134,12 @@ function toDraft(program: AdminProgram): Draft {
     frameColor: program.frameColor || DEFAULT_DESIGN.frameColor,
     accentColor: program.accentColor || DEFAULT_DESIGN.accentColor,
     logoUrl: program.logoUrl || "",
-    logoUrls: Array.isArray(program.logoUrls) ? [...program.logoUrls] : [],
+    logoUrls:
+      Array.isArray(program.logoUrls) && program.logoUrls.length
+        ? [...program.logoUrls]
+        : program.logoUrl
+          ? [program.logoUrl]
+          : [],
     elements: (program.elements && program.elements.length ? program.elements : DEFAULT_DESIGN.elements).map((item) => ({
       ...item,
     })),
@@ -126,7 +151,7 @@ function programFromDraft(draft: Draft): CertificateProgram {
     slug: "preview",
     title: draft.title || "Tədbirin adı",
     date: draft.date,
-    guests: splitGuests(draft.guestsText),
+    guests: splitGuests(draft.guestsText).length ? splitGuests(draft.guestsText) : SAMPLE_GUESTS,
     theme: draft.theme,
     frameColor: draft.frameColor,
     accentColor: draft.accentColor,
@@ -150,7 +175,63 @@ export default function CertificateManager({
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [logoUrlInput, setLogoUrlInput] = useState("");
+  const [logoLibraryOpen, setLogoLibraryOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const mediaLibrary = useMemo(() => {
+    const seen = new Set<string>();
+    const list: { label: string; url: string }[] = [];
+    const push = (item: { label: string; url: string }) => {
+      if (!item.url || seen.has(item.url)) return;
+      seen.add(item.url);
+      list.push(item);
+    };
+    (draft?.logoUrls || []).forEach((url, index) => push({ label: `Sertifikatdakı loqo ${index + 1}`, url }));
+    IMGBB_LIBRARY.forEach(push);
+    LOCAL_IMAGES.forEach(push);
+    return list;
+  }, [draft?.logoUrls]);
+
+  const applyLogos = (add: string[], replace = false) => {
+    setDraft((current) => {
+      if (!current) return current;
+      const next = mergeLogos(replace ? [] : current.logoUrls, add);
+      return { ...current, logoUrls: next, logoUrl: next[0] || "" };
+    });
+  };
+
+  const removeLogo = (url: string) => {
+    setDraft((current) => {
+      if (!current) return current;
+      const next = current.logoUrls.filter((item) => item !== url);
+      return { ...current, logoUrls: next, logoUrl: next[0] || "" };
+    });
+  };
+
+  const moveLogo = (index: number, direction: -1 | 1) => {
+    setDraft((current) => {
+      if (!current) return current;
+      const target = index + direction;
+      if (target < 0 || target >= current.logoUrls.length) return current;
+      const next = [...current.logoUrls];
+      [next[index], next[target]] = [next[target], next[index]];
+      return { ...current, logoUrls: next, logoUrl: next[0] || "" };
+    });
+  };
+
+  const toggleLibraryLogo = (url: string) => {
+    setDraft((current) => {
+      if (!current) return current;
+      const exists = current.logoUrls.includes(url);
+      if (!exists && current.logoUrls.length >= MAX_LOGOS) {
+        notify(`Ən çoxu ${MAX_LOGOS} loqo seçmək olar.`, "error");
+        return current;
+      }
+      const next = exists ? current.logoUrls.filter((item) => item !== url) : [...current.logoUrls, url];
+      return { ...current, logoUrls: next, logoUrl: next[0] || "" };
+    });
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -195,18 +276,20 @@ export default function CertificateManager({
   };
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!file || !draft) return;
+    if (!files.length) return;
     setUploading(true);
-    const result = await uploadImage(file);
-    setUploading(false);
-    if (!result.ok || !result.url) {
-      notify(result.error || "Loqo yüklənmədi.", "error");
-      return;
+    const uploaded: string[] = [];
+    for (const file of files.slice(0, MAX_LOGOS)) {
+      const result = await uploadImage(file);
+      if (result.ok && result.url) uploaded.push(result.url);
+      else notify(result.error || `${file.name} yüklənmədi.`, "error");
     }
-    setDraft({ ...draft, logoUrl: result.url });
-    notify("Loqo yükləndi.");
+    setUploading(false);
+    if (!uploaded.length) return;
+    applyLogos(uploaded);
+    notify(`${uploaded.length} şəkil yükləndi — loqo kimi əlavə olundu.`);
   };
 
   const submit = async () => {
@@ -230,7 +313,7 @@ export default function CertificateManager({
         theme: draft.theme,
         frameColor: draft.frameColor,
         accentColor: draft.accentColor,
-        logoUrl: draft.logoUrl,
+        logoUrl: draft.logoUrls[0] || "",
         logoUrls: draft.logoUrls,
         elements: draft.elements,
       };
@@ -484,7 +567,9 @@ export default function CertificateManager({
               event.preventDefault();
               submit();
             }}
-            className="flex max-h-[96vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
+            className={`flex max-h-[96vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl ${
+              logoLibraryOpen ? "pointer-events-none" : ""
+            }`}
           >
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
@@ -577,36 +662,125 @@ export default function CertificateManager({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
-                    Loqo
-                  </label>
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <label className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                      Loqolar
+                    </label>
+                    <span className="text-[10px] font-bold tabular-nums text-slate-400">
+                      {draft.logoUrls.length}/{MAX_LOGOS}
+                    </span>
+                  </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <input
-                        value={draft.logoUrl}
-                        onChange={(event) => setDraft({ ...draft, logoUrl: event.target.value })}
-                        placeholder="https://i.ibb.co/... (şəffaf PNG tövsiyə olunur)"
+                        value={logoUrlInput}
+                        onChange={(event) => setLogoUrlInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter") return;
+                          event.preventDefault();
+                          if (!logoUrlInput.trim()) return;
+                          applyLogos([logoUrlInput]);
+                          setLogoUrlInput("");
+                        }}
+                        placeholder="https://i.ibb.co/... şəkil linki"
                         className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 text-[11px] text-slate-700 outline-none focus:border-brand-400"
                       />
                       <button
                         type="button"
+                        onClick={() => {
+                          if (!logoUrlInput.trim()) return;
+                          applyLogos([logoUrlInput]);
+                          setLogoUrlInput("");
+                        }}
+                        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-white px-3 text-[11px] font-semibold text-brand-700 ring-1 ring-slate-200"
+                      >
+                        <Plus size={12} /> Əlavə et
+                      </button>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setLogoLibraryOpen(true)}
+                        className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 text-[11px] font-semibold text-white hover:bg-brand-700"
+                      >
+                        <Images size={12} /> Yüklənmiş şəkillərdən seç
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => fileRef.current?.click()}
                         disabled={uploading}
-                        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-white px-3 text-[11px] font-semibold text-brand-700 ring-1 ring-slate-200 disabled:opacity-60"
+                        className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-white px-3 text-[11px] font-semibold text-brand-700 ring-1 ring-slate-200 disabled:opacity-60"
                       >
                         {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-                        {uploading ? "Yüklənir..." : "Loqo yüklə"}
+                        {uploading ? "Yüklənir..." : "Yeni şəkil(lər) yüklə"}
                       </button>
                     </div>
                     <input
                       ref={fileRef}
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
+                      multiple
                       onChange={handleLogoUpload}
                       className="hidden"
                     />
-                    <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-slate-500">
-                      <ImagePlus size={11} /> Şəffaf PNG loqo ən yaxşı nəticə verir. Boş saxlasanız loqo çəkilməyəcək.
+
+                    {draft.logoUrls.length > 0 ? (
+                      <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {draft.logoUrls.map((url, index) => (
+                          <li key={url} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                            <div className="relative flex h-16 items-center justify-center bg-white p-1.5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={url} alt={`Loqo ${index + 1}`} className="max-h-full max-w-full object-contain" />
+                              {index === 0 && (
+                                <span className="absolute left-1 top-1 rounded bg-brand-600 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white">
+                                  Əsas
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between border-t border-slate-100 px-1.5 py-1">
+                              <span className="text-[9.5px] font-bold tabular-nums text-slate-400">#{index + 1}</span>
+                              <div className="flex items-center gap-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => moveLogo(index, -1)}
+                                  disabled={index === 0}
+                                  className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-30"
+                                  aria-label="Sola sürüşdür"
+                                >
+                                  <ChevronUp size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveLogo(index, 1)}
+                                  disabled={index === draft.logoUrls.length - 1}
+                                  className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-30"
+                                  aria-label="Sağa sürüşdür"
+                                >
+                                  <ChevronDown size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => removeLogo(url)}
+                                  className="rounded p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                                  aria-label="Loqonu sil"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-slate-500">
+                        <ImagePlus size={11} /> Loqo yoxdur — şəkil yükləyin və ya kitabxanadan seçin.
+                      </p>
+                    )}
+
+                    <p className="mt-2 text-[10.5px] leading-relaxed text-slate-500">
+                      Bir neçə loqo seçə bilərsiniz (maks. {MAX_LOGOS}) — sertifikatda yan-yana düzülür. #1 “Əsas” loqo
+                      sayılır və köhnə sahədə saxlanılır. Şəffaf PNG ən yaxşı nəticə verir.
                     </p>
                   </div>
                 </div>
@@ -688,6 +862,72 @@ export default function CertificateManager({
               </button>
             </div>
           </form>
+
+          {logoLibraryOpen && (
+            <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[#120E26]/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+              <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
+                <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Loqo seç</h3>
+                    <p className="text-[11px] text-slate-500">
+                      Bir neçə şəkil seçə bilərsiniz · {draft.logoUrls.length}/{MAX_LOGOS}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLogoLibraryOpen(false)}
+                    className="rounded-xl p-2 text-slate-400 hover:bg-slate-100"
+                    aria-label="Bağla"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4">
+                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                    {mediaLibrary.map((image) => {
+                      const active = draft.logoUrls.includes(image.url);
+                      const position = draft.logoUrls.indexOf(image.url) + 1;
+                      return (
+                        <button
+                          key={image.url}
+                          type="button"
+                          onClick={() => toggleLibraryLogo(image.url)}
+                          className={`group relative overflow-hidden rounded-xl border-2 bg-slate-50 text-left transition-all ${
+                            active ? "border-brand-600 ring-2 ring-brand-100" : "border-transparent hover:border-brand-200"
+                          }`}
+                        >
+                          <div className="flex h-20 items-center justify-center p-2">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={image.url} alt={image.label} className="max-h-full max-w-full object-contain" />
+                          </div>
+                          <span className="block truncate border-t border-slate-100 bg-white px-2 py-1 text-[9.5px] font-semibold text-slate-600">
+                            {image.label}
+                          </span>
+                          {active && (
+                            <span className="absolute right-1.5 top-1.5 inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-brand-600 px-1 text-[9px] font-bold text-white">
+                              <Check size={10} /> {position}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3.5">
+                  <p className="text-[10.5px] text-slate-500">Seçilmiş loqolar dərhal önizləmədə görünür.</p>
+                  <button
+                    type="button"
+                    onClick={() => setLogoLibraryOpen(false)}
+                    className="rounded-full bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-700"
+                  >
+                    Hazırdır
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -713,7 +953,16 @@ function CertificateThumb({ program }: { program: AdminProgram }) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [program.id, program.theme, program.frameColor, program.accentColor, program.logoUrl, program.elements]);
+  }, [
+    program.id,
+    program.theme,
+    program.frameColor,
+    program.accentColor,
+    program.logoUrl,
+    (program.logoUrls || []).join("|"),
+    program.elements,
+    program.guests?.join("|"),
+  ]);
 
   return <canvas ref={canvasRef} className="h-full w-full object-cover object-top" aria-hidden="true" />;
 }
@@ -1065,11 +1314,11 @@ function CertificateEditor({
               <button
                 type="button"
                 onClick={() => {
-                  onDraftChange({ ...draft, logoUrl: "" });
+                  onDraftChange({ ...draft, logoUrls: [], logoUrl: "" });
                 }}
                 className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white text-[10.5px] font-semibold text-slate-600 hover:border-rose-200 hover:text-rose-600"
               >
-                <Trash2 size={11} /> Loqonu sil
+                <Trash2 size={11} /> Bütün loqoları sil
               </button>
               <span className="inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-white text-[10px] font-semibold text-slate-500">
                 {logoStatus === "loading" ? (
@@ -1077,10 +1326,10 @@ function CertificateEditor({
                     <Loader2 size={11} className="animate-spin" /> yüklənir
                   </>
                 ) : logoStatus === "error" ? (
-                  "şəkil açılmadı"
-                ) : draft.logoUrl ? (
+                  "şəkillər açılmadı"
+                ) : draft.logoUrls.length ? (
                   <>
-                    <Palette size={11} /> hazır
+                    <Palette size={11} /> {draft.logoUrls.length} loqo hazır
                   </>
                 ) : (
                   "loqo yoxdur"
