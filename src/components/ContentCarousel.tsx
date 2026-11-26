@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper";
 import { A11y, Keyboard, Navigation, Pagination } from "swiper/modules";
 import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarDays, Newspaper, Sparkles } from "lucide-react";
-import { FALLBACK_IMAGE, SiteItem, SiteSection, formatDate } from "@/lib/siteContent";
+import { FALLBACK_IMAGE, SiteItem, SiteSection, formatDate, isExpired, itemSlug } from "@/lib/siteContent";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -22,7 +22,7 @@ const DETAIL_BASE: Partial<Record<SiteSection, string>> = {
 export function detailHref(item: SiteItem) {
   if (item.link && /^https?:\/\//i.test(item.link)) return item.link;
   const base = DETAIL_BASE[item.sec];
-  return base ? `${base}/${encodeURIComponent(item.id)}` : "/";
+  return base ? `${base}/${encodeURIComponent(itemSlug(item))}` : "/";
 }
 
 function Thumb({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) {
@@ -41,8 +41,9 @@ function Thumb({ src, alt, className = "" }: { src?: string; alt: string; classN
   );
 }
 
-function AnnouncementCard({ item }: { item: SiteItem }) {
+export function AnnouncementCard({ item }: { item: SiteItem }) {
   const external = /^https?:\/\//i.test(item.link || "");
+  const expired = isExpired(item);
   return (
     <Link
       href={detailHref(item)}
@@ -54,7 +55,7 @@ function AnnouncementCard({ item }: { item: SiteItem }) {
         <div className="relative h-40 w-full shrink-0 overflow-hidden bg-[#EFECFA] sm:h-auto sm:w-[42%]">
           <Thumb src={item.image} alt={item.title} className="transition-transform duration-500 group-hover:scale-105" />
           <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-brand-700 backdrop-blur">
-            {item.subtitle || "Elan"}
+            {expired ? "Bitib" : item.subtitle || "Elan"}
           </span>
         </div>
       )}
@@ -70,6 +71,11 @@ function AnnouncementCard({ item }: { item: SiteItem }) {
           <span className="inline-flex items-center gap-1.5 text-[10.5px] font-semibold text-[#6E6788]">
             <CalendarDays size={12} className="text-brand-600" />
             {item.date ? formatDate(item.date) : item.meta || "Davam edir"}
+            {expired && (
+              <span className="rounded-full bg-[#F1EEF8] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-[#6E6788]">
+                Bitib
+              </span>
+            )}
           </span>
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1EEFE] text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
             <ArrowUpRight size={14} strokeWidth={2.5} />
@@ -80,7 +86,7 @@ function AnnouncementCard({ item }: { item: SiteItem }) {
   );
 }
 
-function NewsCard({ item }: { item: SiteItem }) {
+export function NewsCard({ item }: { item: SiteItem }) {
   const external = /^https?:\/\//i.test(item.link || "");
   return (
     <Link
@@ -113,7 +119,7 @@ function NewsCard({ item }: { item: SiteItem }) {
   );
 }
 
-function ProjectCard({ item }: { item: SiteItem }) {
+export function ProjectCard({ item }: { item: SiteItem }) {
   const external = /^https?:\/\//i.test(item.link || "");
   return (
     <Link
@@ -228,8 +234,15 @@ export default function ContentCarousel({ items, variant, className = "" }: Cont
         ))}
       </Swiper>
 
-      {locked === false && (
-      <div className="mt-5 flex items-center justify-between gap-4">
+      {/*
+        İdarəetmə sətri HƏMİŞƏ DOM-da olmalıdır: Swiper naviqasiya düymələrini
+        yalnız init zamanı tapır. Əvvəl bu blok `locked === false` olanda
+        render olunurdu, yəni Swiper işə düşəndə düymələr hələ yox idi və
+        mobil görünüşdə onlar heç işləmirdi. İndi yalnız görünüşü idarə edirik.
+      */}
+      <div
+        className={`mt-5 items-center justify-between gap-4 ${locked === false ? "flex" : "hidden"}`}
+      >
         <div className="flex items-center gap-2">
           <button
             id={prevId}
@@ -250,7 +263,6 @@ export default function ContentCarousel({ items, variant, className = "" }: Cont
         </div>
         <div id={dotsId} className="flex flex-1 items-center justify-end" />
       </div>
-      )}
     </div>
   );
 }

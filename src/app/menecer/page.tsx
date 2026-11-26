@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowUpRight,
+  Award,
   CalendarClock,
   CheckCircle2,
   ClipboardList,
@@ -31,10 +32,11 @@ import { DEFAULT_CONTENT, SiteItem, SiteSection, SECTION_LABELS, formatDate } fr
 import { loadContent } from "@/lib/contentApi";
 import ContentManager from "@/components/menecer/ContentManager";
 import FormManager from "@/components/menecer/FormManager";
+import CertificateManager from "@/components/menecer/CertificateManager";
 import { UserRole } from "@/types";
 import { shortName, initial } from "@/lib/userName";
 
-type Tab = "overview" | "form" | SiteSection;
+type Tab = "overview" | "form" | "certificates" | SiteSection;
 
 const NAV: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: "overview", label: "İcmal", icon: Gauge },
@@ -42,6 +44,7 @@ const NAV: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: "news", label: "Xəbərlər", icon: Newspaper },
   { key: "membership", label: "Üzvlük proqramı", icon: UserPlus },
   { key: "form", label: "Müraciət formu", icon: ClipboardList },
+  { key: "certificates", label: "Sertifikatlar", icon: Award },
   { key: "project", label: "Layihələr", icon: FolderGit2 },
   { key: "about", label: "Haqqımızda", icon: FileText },
   { key: "plan", label: "Fəaliyyət planı", icon: CalendarClock },
@@ -182,7 +185,14 @@ export default function MenecerPage() {
     );
   }
 
-  const activeLabel = tab === "overview" ? "İcmal" : tab === "form" ? "Müraciət formu" : SECTION_LABELS[tab as SiteSection];
+  const activeLabel =
+    tab === "overview"
+      ? "İcmal"
+      : tab === "form"
+      ? "Müraciət formu"
+      : tab === "certificates"
+      ? "Sertifikatlar"
+      : SECTION_LABELS[tab as SiteSection];
 
   return (
     <div className="min-h-screen bg-[#F7F6FC] font-sans">
@@ -289,7 +299,7 @@ export default function MenecerPage() {
               const count =
                 entry.key === "overview"
                   ? items.length
-                  : entry.key === "form"
+                  : entry.key === "form" || entry.key === "certificates"
                   ? null
                   : bySection[entry.key as SiteSection]?.length || 0;
               return (
@@ -359,6 +369,8 @@ export default function MenecerPage() {
             <Overview items={items} bySection={bySection} connected={connected} onOpen={setTab} />
           ) : tab === "form" ? (
             <FormManager notify={notify} />
+          ) : tab === "certificates" ? (
+            <CertificateManager notify={notify} />
           ) : (
             <ContentManager
               section={tab}

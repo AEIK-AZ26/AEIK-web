@@ -17,6 +17,8 @@ import {
   fetchSiteContent,
   formatDate,
   groupContent,
+  isExpired,
+  itemSlug,
 } from "@/lib/siteContent";
 
 export type DetailSection = Extract<SiteSection, "announcement" | "news" | "project" | "about">;
@@ -59,7 +61,7 @@ export default function ContentDetail({ section, id }: ContentDetailProps) {
 
   const item = useMemo(() => {
     if (section === "about") return group[0];
-    return group.find((entry) => entry.id === id);
+    return group.find((entry) => entry.id === id || itemSlug(entry) === id);
   }, [group, id, section]);
 
   const meta = META[section];
@@ -132,6 +134,17 @@ export default function ContentDetail({ section, id }: ContentDetailProps) {
                       </span>
                     )}
                     {item.meta && <span className="text-[#8A83A0]">{item.meta}</span>}
+                    {section === "announcement" && (
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] ${
+                          isExpired(item)
+                            ? "border-slate-200 bg-slate-100 text-slate-600"
+                            : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
+                        {isExpired(item) ? "Bitib" : "Aktiv"}
+                      </span>
+                    )}
                   </div>
 
                   <div className="relative mt-7 aspect-[16/9] w-full overflow-hidden rounded-[24px] bg-[#EFECFA] shadow-[0_30px_60px_-42px_rgba(32,26,63,0.5)]">

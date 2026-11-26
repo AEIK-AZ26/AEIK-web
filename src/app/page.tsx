@@ -9,14 +9,16 @@ import {
   ArrowUpRight,
   CalendarDays,
   Check,
+  Instagram,
+  Linkedin,
   Megaphone,
-  Quote,
 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SectionLink from "@/components/SectionLink";
 import ContentCarousel from "@/components/ContentCarousel";
+import EventCard from "@/components/EventCard";
 import Reveal from "@/components/ui/Reveal";
 import {
   DEFAULT_CONTENT,
@@ -25,8 +27,10 @@ import {
   fetchSiteContent,
   formatDate,
   groupContent,
+  isExpired,
 } from "@/lib/siteContent";
 import { ACTIVITIES, CTA, HERO, OUTCOMES, ROTATION } from "@/data/program";
+import { CONTACT, EVENTS } from "@/data/brief";
 
 function Label({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -115,7 +119,7 @@ export default function HomePage() {
     .map((line) => line.replace(/^[-•]\s*/, "").trim())
     .filter(Boolean);
 
-  const heroAnnouncement = groups.announcement[0];
+  const heroAnnouncement = groups.announcement.find((item) => !isExpired(item)) || groups.announcement[0];
   const stats = [
     { value: String(groups.project.length), label: "Böyük layihə" },
     { value: String(groups.plan.length), label: "Aylıq fəaliyyət planı" },
@@ -230,9 +234,9 @@ export default function HomePage() {
             <div className="mt-4 flex flex-col gap-2 text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#4E4768] sm:flex-row sm:items-center sm:justify-between lg:text-[10px]">
               <span className="inline-flex items-center gap-2">
                 <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-emerald-500" : "bg-brand-600"}`} />
-                {connected ? "Məzmun canlı yenilənir" : "Statik məzmun · oflayn fallback"}
+                {connected ? "Məzmun canlı yenilənir" : "Elm və İnnovasiya Proqramı"}
               </span>
-              <span className="hidden sm:block">{HERO.motto}</span>
+              <span className="hidden sm:block">{HERO.period}</span>
               <SectionLink href="#haqqimizda" className="inline-flex items-center gap-1.5 transition-colors hover:text-brand-600">
                 {HERO.scroll}
                 <ArrowDown size={13} strokeWidth={2.5} />
@@ -308,7 +312,7 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
           <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <SectionHeading
-              label="02 / Elanlar"
+              label="Elanlar"
               title="Aktiv elanlar və imkanlar."
               text="Müraciət, qeydiyyat və tədbir elanları — panelden idarə olunur."
             />
@@ -326,7 +330,7 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
           <Reveal>
             <SectionHeading
-              label="03 / Xəbərlər"
+              label="Xəbərlər"
               title="Komandanın son xəbərləri."
               text="Görüşlər, tərəfdaşlıqlar və yeni formatlar haqqında qısa xülasələr."
             />
@@ -341,13 +345,40 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
           <Reveal>
             <SectionHeading
-              label="04 / Böyük layihələr"
+              label="Böyük layihələr"
               title="İdeyalar böyüyür. Üfüqlər genişlənir."
               text="Elmi əlaqələrdən startap ekosisteminə — uzunmüddətli təsir üçün birlikdə."
             />
           </Reveal>
 
           <ContentCarousel variant="project" items={groups.project} className="mt-9" />
+        </div>
+      </section>
+
+      {/* ───────────────────────── EVENTS ───────────────────────── */}
+      <section id="tedbirler" className="scroll-mt-24 bg-white py-16 lg:py-24">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <SectionHeading
+              label="Tədbirlər"
+              title="Yaxın tədbirlər və qeydiyyat."
+              text="Forumlar, konfranslar, festivallar və master-klaslar — hər birinin öz səhifəsi və qeydiyyat imkanı var."
+            />
+            <Link
+              href="/tedbirler"
+              className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-[#E4E0F2] bg-white px-4 py-2 text-[11px] font-bold text-ink transition-colors hover:border-brand-200 hover:text-brand-700 sm:self-auto"
+            >
+              Bütün tədbirlər <ArrowUpRight size={13} />
+            </Link>
+          </Reveal>
+
+          <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+            {EVENTS.slice(0, 3).map((event, index) => (
+              <Reveal key={event.slug} delay={index * 60} className="h-full">
+                <EventCard event={event} />
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -423,6 +454,63 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ───────────────────────── INSTAGRAM ───────────────────────── */}
+      <section className="bg-[#FAF9FF] py-14 lg:py-20">
+        <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-center lg:gap-12">
+            <Reveal>
+              <SectionHeading
+                label="Sosial media"
+                title="Instagram-da AEİK."
+                text="Tədbirlər, görüşlər və komanda həyatı ilk olaraq Instagram-da paylaşılır. LinkedIn-də isə elmi və peşəkar yenilikləri izləyə bilərsiniz."
+              />
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <a
+                  href={CONTACT.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-[12px] font-bold text-white transition-colors hover:bg-[#2E2552]"
+                >
+                  <Instagram size={15} /> @aeikvolunteer
+                </a>
+                <a
+                  href={CONTACT.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-[#E4E0F2] bg-white px-5 text-[12px] font-bold text-ink transition-colors hover:border-brand-200 hover:text-brand-700"
+                >
+                  <Linkedin size={15} /> LinkedIn
+                </a>
+              </div>
+            </Reveal>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { src: "/assets/pages/hero-card.jpg", alt: "AEİK elm və innovasiya" },
+                { src: "/assets/pages/project-forum.jpg", alt: "Elmi forum" },
+                { src: "/assets/pages/about-lab.jpg", alt: "Laboratoriya işi" },
+                { src: "/assets/pages/project-startup.jpg", alt: "Startap akseleratoru" },
+              ].map((photo, index) => (
+                <Reveal key={photo.src} delay={index * 60}>
+                  <a
+                    href={CONTACT.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative block aspect-square overflow-hidden rounded-2xl bg-[#EFECFA]"
+                    aria-label="Instagram-da bax"
+                  >
+                    <MediaImage src={photo.src} alt={photo.alt} className="transition-transform duration-500 group-hover:scale-105" />
+                    <span className="absolute inset-0 flex items-center justify-center bg-[#1B1533]/45 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Instagram size={20} className="text-white" />
+                    </span>
+                  </a>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ───────────────────────── MEMBERSHIP ───────────────────────── */}
       <section id="uzvluk" className="scroll-mt-24 bg-[#FAF9FF] py-16 lg:py-24">
         <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
@@ -482,7 +570,7 @@ export default function HomePage() {
         <div className="mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8">
           <Reveal>
             <SectionHeading
-              label="05 / Fəaliyyət planı"
+              label="Fəaliyyət planı"
               title="9 ay. Ortaq məqsəd. Aydın yol xəritəsi."
               text="İyul 2026 – Mart 2027 üçün planlaşdırılmış mərhələlər və növbəti fəaliyyətlər."
             />
@@ -538,13 +626,6 @@ export default function HomePage() {
                   <ArrowUpRight size={16} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </SectionLink>
               </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={80}>
-            <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-[#8A83A0]">
-              <Quote size={13} className="text-brand-400" />
-              Araşdırırıq. Yaradırıq. Dəyişirik.
             </div>
           </Reveal>
         </div>

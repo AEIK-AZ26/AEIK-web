@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CONTACT, SITE, SITE as SITE_INFO } from "@/data/brief";
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://aeik.vercel.app";
-const SITE_TITLE = "Azərbaycan Elm və İnnovasiya Könüllüləri (AEİK)";
-const SITE_DESCRIPTION =
-  "Gənc tədqiqatçılar və innovatorlar üçün elm və innovasiya proqramı: böyük layihələr, davamlı fəaliyyətlər və fəaliyyət planı.";
+// Canonical domen brifə uyğun olaraq aeik.az-dır; Vercel preview üçün env ilə dəyişilə bilər.
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || SITE.url).replace(/\/$/, "");
+const SITE_TITLE = SITE.title;
+const SITE_DESCRIPTION = SITE.description;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -28,6 +29,26 @@ export const metadata: Metadata = {
   icons: {
     icon: "/assets/icon-bulb.jpg",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/assets/pages/hero-card.jpg"],
+  },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  name: SITE_INFO.title,
+  alternateName: "AEİK",
+  url: SITE_URL,
+  logo: `${SITE_URL}/assets/logo-primary.png`,
+  email: CONTACT.email,
+  telephone: CONTACT.phone,
+  slogan: SITE_INFO.motto,
+  address: { "@type": "PostalAddress", addressLocality: "Bakı", addressCountry: "AZ" },
+  sameAs: [CONTACT.instagram, CONTACT.linkedin],
 };
 
 export default function RootLayout({
@@ -38,6 +59,10 @@ export default function RootLayout({
   return (
     <html lang="az" className="scroll-smooth">
       <body className="antialiased min-h-screen flex flex-col bg-white font-sans text-ink">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         {children}
       </body>
     </html>

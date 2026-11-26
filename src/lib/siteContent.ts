@@ -203,6 +203,39 @@ export const DEFAULT_CONTENT: SiteItem[] = [
   ...fromRoadmap(),
 ];
 
+const AZ_SLUG_MAP: Record<string, string> = {
+  'ə': 'e', 'ı': 'i', 'ş': 's', 'ç': 'c', 'ö': 'o', 'ü': 'u', 'ğ': 'g',
+  'Ə': 'e', 'I': 'i', 'İ': 'i', 'Ş': 's', 'Ç': 'c', 'Ö': 'o', 'Ü': 'u', 'Ğ': 'g',
+};
+
+/** Oxunaqlı URL: "Məqalə saatları yeni mövsümə başladı" → "meqale-saatlari-yeni-movsume-basladi". */
+export function slugify(value: string): string {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[əışçöüğ]/g, (char) => AZ_SLUG_MAP[char] || char)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 70);
+}
+
+/** Kart/detal linki üçün oxunaqlı slug (boş başlıqda id-yə düşür). */
+export function itemSlug(item: SiteItem): string {
+  const slug = slugify(item.title || '');
+  return slug || item.id;
+}
+
+/** Keçmiş tarixli elanlar avtomatik "Bitib" sayılır. */
+export function isExpired(item: SiteItem): boolean {
+  if (!item?.date) return false;
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(item.date);
+  if (!iso) return false;
+  const today = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const todayKey = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  return `${iso[1]}-${iso[2]}-${iso[3]}` < todayKey;
+}
+
 export function groupContent(items: SiteItem[]): Record<SiteSection, SiteItem[]> {
   const GROUPS: SiteSection[] = ['announcement', 'news', 'membership', 'project', 'about', 'plan'];
   const grouped = GROUPS.reduce((acc, sec) => {

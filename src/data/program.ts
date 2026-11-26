@@ -13,7 +13,7 @@ export const HERO = {
   badge: "Elm və İnnovasiya Proqramı",
   title: ["Gələcəyi elmlə", "birlikdə quraq."],
   text: "Tədqiqatdan yeni ideyalara, ideyadan real layihəyə. Gənc tədqiqatçılar və innovatorlar üçün bilik, mentorluq və əməkdaşlıq imkanları.",
-  primary: { label: "Layihələri kəşf et", href: "#layiheler" },
+  primary: { label: "Tədbirləri kəşf et", href: "/tedbirler" },
   secondary: { label: "Fəaliyyət planı", href: "#fealiyyet" },
   period: "İyul 2026 — Mart 2027",
   motto: "Araşdırırıq. Yaradırıq. Dəyişirik.",
@@ -32,7 +32,7 @@ export const STATS = [
 ];
 
 export const ABOUT = {
-  label: "01 / Proqram haqqında",
+  label: "Proqram haqqında",
   title: ["Bilikdə başlayan,", "birlikdə böyüyən gələcək."],
   text: "Azərbaycan Elm və İnnovasiya Könüllülərinin proqramı gənc tədqiqatçıları və innovatorları bir araya gətirir. Elmi əməkdaşlığı gücləndirir, ideyaların real layihələrə çevrilməsinə dəstək verir.",
   points: [
@@ -47,7 +47,7 @@ export const ABOUT = {
 };
 
 export const PROJECTS = {
-  label: "02 / Böyük layihələr",
+  label: "Böyük layihələr",
   title: "İdeyalar böyüyür. Üfüqlər genişlənir.",
   text: "Elmi əlaqələrdən startap ekosisteminə — uzunmüddətli təsir üçün birlikdə.",
   items: [
@@ -93,7 +93,7 @@ export const PROJECTS = {
 };
 
 export const OUTCOMES = {
-  label: "03 / Gözlənilən nəticələr",
+  label: "Gözlənilən nəticələr",
   title: "Qarşımıza qoyduğumuz hədəflər.",
   text: "Fəaliyyət planı üzrə nəzərdə tutulan nəticələr — əldə edilmiş göstəricilər deyil.",
   items: [
@@ -105,7 +105,7 @@ export const OUTCOMES = {
 };
 
 export const ACTIVITIES = {
-  label: "04 / Davamlı fəaliyyətlər",
+  label: "Davamlı fəaliyyətlər",
   title: "Hər görüş yeni bir başlanğıcdır.",
   text: "Kiçik addımlar, davamlı inkişaf. Bilik və təcrübə paylaşımı üçün dörd format.",
   items: [
@@ -149,7 +149,7 @@ export const ROTATION = {
 };
 
 export const ROADMAP = {
-  label: "05 / Fəaliyyət planı",
+  label: "Fəaliyyət planı",
   title: "9 ay. Ortaq məqsəd. Aydın yol xəritəsi.",
   text: "İyul 2026 – Mart 2027 üçün planlaşdırılmış mərhələlər və növbəti fəaliyyətlər.",
   months: [
@@ -205,7 +205,7 @@ export const ROADMAP = {
     {
       month: "Fevral",
       year: "2027",
-      title: "Səhnə komandalarındır",
+      title: "Demo Day və final təqdimatları",
       text: "Demo Day: investor və şirkətlər qarşısında təqdimatlar; Forumun qiymətləndirilməsi.",
       tag: "A qrupu · Məqalə Saatları + Akademik Yol",
     },
