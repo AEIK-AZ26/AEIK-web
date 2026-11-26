@@ -64,12 +64,12 @@ export default function Footer() {
 
         <div className="grid grid-cols-1 gap-9 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
           <div>
-            <Link href="/" aria-label="AEİK" className="relative block h-10 w-[190px]">
+            <Link href="/" aria-label="AEİK" className="relative block h-10 w-[189px]">
               <Image
                 src="/assets/logo-white-trim.png"
                 alt="Azərbaycan Elm və İnnovasiya Könüllüləri"
                 fill
-                sizes="190px"
+                sizes="189px"
                 className="object-contain object-left"
               />
             </Link>

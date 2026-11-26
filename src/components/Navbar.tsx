@@ -107,12 +107,12 @@ export default function Navbar() {
           }`}
         >
           <div className="flex h-[64px] w-full items-center justify-between gap-3 px-4 sm:px-6 lg:h-[76px] lg:px-8">
-            <Link href="/" aria-label="AEİK ana səhifə" className="relative block h-7 w-[116px] shrink-0 sm:h-8 sm:w-[132px] lg:h-9 lg:w-[150px]">
+            <Link href="/" aria-label="AEİK ana səhifə" className="relative block h-7 w-[134px] shrink-0 sm:h-8 sm:w-[152px] lg:h-8 lg:w-[152px] xl:h-9 xl:w-[172px]">
               <Image
                 src="/assets/logo-primary-trim.png"
                 alt="Azərbaycan Elm və İnnovasiya Könüllüləri"
                 fill
-                sizes="150px"
+                sizes="(min-width: 1280px) 172px, 152px"
                 className="object-contain object-left"
                 priority
               />
