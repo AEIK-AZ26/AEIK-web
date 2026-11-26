@@ -132,7 +132,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* ───────────────────────── HERO ───────────────────────── */}
-      <section className="hero-mesh relative overflow-hidden">
+      <section className="hero-mesh relative -mt-[64px] overflow-hidden pt-[64px] lg:-mt-[76px] lg:pt-[76px]">
         <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-brand-300/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 top-0 h-80 w-80 rounded-full bg-[#9C8AF8]/25 blur-3xl" />
 

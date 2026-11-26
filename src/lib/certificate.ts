@@ -11,6 +11,7 @@ import {
   DESIGN_HEIGHT,
   DESIGN_WIDTH,
   ElementKey,
+  ensureGuestElements,
   formatCertificateDate,
   resolveCertificateText,
   sanitizeElements,
@@ -332,7 +333,7 @@ function resolveElementText(el: CertificateElement, { program, data }: ElementRe
     date: formatCertificateDate(program.date),
     name: data.name,
     code: data.code || "",
-    guests: (program.guests || []).join(", "),
+    guests: program.guests || [],
   });
 }
 
@@ -357,7 +358,10 @@ export function paintCertificate(
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   ctx.clearRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT);
 
-  const elements = program.elements && program.elements.length ? program.elements : sanitizeElements(DEFAULT_DESIGN.elements);
+  const elements = ensureGuestElements(
+    program.elements && program.elements.length ? program.elements : sanitizeElements(DEFAULT_DESIGN.elements),
+    (program.guests || []).length
+  );
   const theme = program.theme === "ribbon" ? "ribbon" : "classic";
 
   if (theme === "ribbon") drawRibbonFrame(ctx, program);

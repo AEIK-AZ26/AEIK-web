@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { CertificateProgramModel } from '@/models/CertificateProgram';
 import { DEMO_CERTIFICATES } from '@/data/brief';
 
 export interface CertificateRecord {
@@ -38,7 +39,16 @@ export async function GET(req: Request) {
       if (database) {
         const doc = await database.collection('certificates').findOne({ code });
         if (doc) {
-          const { _id, ...rest } = doc as Record<string, unknown>;
+          const { _id, ...rest } = doc as Record<string, any>;
+          // Proqramın cari adı/tarixi əsasdır: sertifikat onun dizaynı ilə çəkilir,
+          // yoxlama nəticəsi də həmin məlumatı göstərməlidir.
+          if (rest.programId) {
+            const program = await CertificateProgramModel.findOne({ id: rest.programId }).lean();
+            if (program) {
+              rest.event = program.title;
+              rest.date = program.date;
+            }
+          }
           return NextResponse.json({ found: true, connected: true, demo: false, data: rest });
         }
         // Baza boş ola bilər — yalnız sənəddə göstərilən demo kodlar üçün nümunə qeyd qaytarılır.

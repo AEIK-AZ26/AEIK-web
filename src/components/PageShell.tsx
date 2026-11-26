@@ -30,7 +30,7 @@ export function PageHero({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="hero-mesh relative overflow-hidden">
+    <section className="hero-mesh relative -mt-[64px] overflow-hidden pt-[64px] lg:-mt-[76px] lg:pt-[76px]">
       <div className="pointer-events-none absolute -left-24 top-16 h-64 w-64 rounded-full bg-brand-300/25 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 -top-10 h-72 w-72 rounded-full bg-[#9C8AF8]/20 blur-3xl" />
       <div className="relative mx-auto w-full max-w-[1320px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">

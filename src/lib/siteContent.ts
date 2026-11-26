@@ -225,6 +225,19 @@ export function itemSlug(item: SiteItem): string {
   return slug || item.id;
 }
 
+/**
+ * Kartlarda göstərilən qısa təqdimat: 200 simvol, sözün ortasında kəsilmir.
+ * Detal səhifəsi tam mətni (`body`/`text`) olduğu kimi göstərir.
+ */
+export function excerpt(value?: string, limit = 200): string {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= limit) return text;
+  const cut = text.slice(0, limit);
+  const lastSpace = cut.lastIndexOf(" ");
+  const base = lastSpace > limit * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${base.replace(/[.,;:!?…\-–—]+$/, "")}…`;
+}
+
 /** Keçmiş tarixli elanlar avtomatik "Bitib" sayılır. */
 export function isExpired(item: SiteItem): boolean {
   if (!item?.date) return false;

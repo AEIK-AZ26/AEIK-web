@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { CertificateProgramModel } from '@/models/CertificateProgram';
+import { CertificateModel } from '@/models/Certificate';
 import { requireEditor } from '@/lib/editorAuth';
 import { designFromBody, publicCertificateProgram } from '@/lib/certificateProgramServer';
 
@@ -66,6 +67,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   try {
     const doc = await CertificateProgramModel.findOneAndUpdate({ id: params.id }, { $set: update }, { new: true }).lean();
     if (!doc) return NextResponse.json({ error: 'Proqram tapılmadı.' }, { status: 404 });
+
+    // Artıq verilmiş sertifikatlar da redaktəni əks etdirməlidir: yoxlama səhifəsi
+    // məhz `certificates` kolleksiyasındakı event/date sahələrini oxuyur.
+    try {
+      await CertificateModel.updateMany(
+        { programId: params.id },
+        { $set: { event: doc.title, date: doc.date } }
+      );
+    } catch (syncError) {
+      console.error('Certificate sync error:', syncError);
+    }
+
     return NextResponse.json({
       connected: true,
       data: { ...plain(doc), ...publicCertificateProgram(doc) },

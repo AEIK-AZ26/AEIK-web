@@ -31,21 +31,23 @@ import {
 import { uploadImage } from "@/lib/contentApi";
 import { IMGBB_LIBRARY, LOCAL_IMAGES } from "@/lib/siteContent";
 import {
-  AUTO_ELEMENTS,
   CertificateBox,
   CertificateBoxes,
   CertificateElement,
   CertificateProgram,
   CertificateTheme,
   DEFAULT_DESIGN,
-  DEFAULT_ELEMENTS,
   DESIGN_HEIGHT,
   DESIGN_WIDTH,
-  ELEMENT_KEYS,
-  ELEMENT_LABELS,
   ElementKey,
   certificateImageProxy,
+  defaultElement,
+  elementLabel,
+  ensureGuestElements,
   formatCertificateDate,
+  guestIndexFromKey,
+  isAutoElement,
+  isGuestKey,
   loadCertificateImage,
   paintCertificate,
   renderCertificate,
@@ -79,7 +81,7 @@ interface Draft {
   id?: string;
   title: string;
   date: string;
-  guestsText: string;
+  guests: string[];
   active: boolean;
   theme: CertificateTheme;
   frameColor: string;
@@ -98,7 +100,7 @@ const today = () => {
 const EMPTY: Draft = {
   title: "",
   date: today(),
-  guestsText: "",
+  guests: [],
   active: false,
   theme: DEFAULT_DESIGN.theme,
   frameColor: DEFAULT_DESIGN.frameColor,
@@ -116,19 +118,12 @@ function authHeaders(json = true): Record<string, string> {
   return headers;
 }
 
-function splitGuests(value: string): string[] {
-  return value
-    .split(/[\n,;]+/)
-    .map((guest) => guest.replace(/\s+/g, " ").trim())
-    .filter(Boolean);
-}
-
 function toDraft(program: AdminProgram): Draft {
   return {
     id: program.id,
     title: program.title,
     date: program.date,
-    guestsText: (program.guests || []).join(", "),
+    guests: [...(program.guests || [])],
     active: program.active,
     theme: program.theme === "ribbon" ? "ribbon" : "classic",
     frameColor: program.frameColor || DEFAULT_DESIGN.frameColor,
@@ -140,9 +135,12 @@ function toDraft(program: AdminProgram): Draft {
         : program.logoUrl
           ? [program.logoUrl]
           : [],
-    elements: (program.elements && program.elements.length ? program.elements : DEFAULT_DESIGN.elements).map((item) => ({
-      ...item,
-    })),
+    elements: ensureGuestElements(
+      (program.elements && program.elements.length ? program.elements : DEFAULT_DESIGN.elements).map((item) => ({
+        ...item,
+      })),
+      (program.guests || []).length
+    ),
   };
 }
 
@@ -151,7 +149,9 @@ function programFromDraft(draft: Draft): CertificateProgram {
     slug: "preview",
     title: draft.title || "Tədbirin adı",
     date: draft.date,
-    guests: splitGuests(draft.guestsText).length ? splitGuests(draft.guestsText) : SAMPLE_GUESTS,
+    guests: draft.guests.filter((guest) => guest.trim()).length
+      ? draft.guests.map((guest) => guest.trim()).filter(Boolean)
+      : SAMPLE_GUESTS,
     theme: draft.theme,
     frameColor: draft.frameColor,
     accentColor: draft.accentColor,
@@ -175,6 +175,7 @@ export default function CertificateManager({
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [guestInput, setGuestInput] = useState("");
   const [logoUrlInput, setLogoUrlInput] = useState("");
   const [logoLibraryOpen, setLogoLibraryOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -256,12 +257,54 @@ export default function CertificateManager({
 
   const openNew = () => {
     setSelected("name");
-    setDraft({ ...EMPTY, elements: DEFAULT_DESIGN.elements.map((item) => ({ ...item })), date: today() });
+    setGuestInput("");
+    setDraft({
+      ...EMPTY,
+      guests: [],
+      elements: DEFAULT_DESIGN.elements.map((item) => ({ ...item })),
+      date: today(),
+    });
   };
 
   const openEdit = (program: AdminProgram) => {
     setSelected("name");
+    setGuestInput("");
     setDraft(toDraft(program));
+  };
+
+  const addGuest = () => {
+    const name = guestInput.replace(/\s+/g, " ").trim().slice(0, 80);
+    if (!name) return;
+    setDraft((current) => {
+      if (!current) return current;
+      if (current.guests.some((guest) => guest.toLowerCase() === name.toLowerCase())) {
+        notify("Bu qonaq artıq siyahıdadır.", "error");
+        return current;
+      }
+      if (current.guests.length >= 30) {
+        notify("Bir sertifikata ən çoxu 30 qonaq əlavə etmək olar.", "error");
+        return current;
+      }
+      const guests = [...current.guests, name];
+      return { ...current, guests, elements: ensureGuestElements(current.elements, guests.length) };
+    });
+    setGuestInput("");
+  };
+
+  const updateGuest = (index: number, value: string) => {
+    setDraft((current) =>
+      current
+        ? { ...current, guests: current.guests.map((guest, i) => (i === index ? value.slice(0, 80) : guest)) }
+        : current
+    );
+  };
+
+  const removeGuest = (index: number) => {
+    setDraft((current) => {
+      if (!current) return current;
+      const guests = current.guests.filter((_, i) => i !== index);
+      return { ...current, guests, elements: ensureGuestElements(current.elements, guests.length) };
+    });
   };
 
   const updateElement = (key: ElementKey, patch: Partial<CertificateElement>) => {
@@ -308,7 +351,7 @@ export default function CertificateManager({
       const payload = {
         title: draft.title,
         date: draft.date,
-        guests: splitGuests(draft.guestsText),
+        guests: draft.guests.map((guest) => guest.replace(/\s+/g, " ").trim()).filter(Boolean),
         active: draft.active,
         theme: draft.theme,
         frameColor: draft.frameColor,
@@ -786,19 +829,72 @@ export default function CertificateManager({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
-                    Qonaqlar
-                  </label>
-                  <textarea
-                    value={draft.guestsText}
-                    onChange={(event) => setDraft({ ...draft, guestsText: event.target.value })}
-                    placeholder="Hər qonağı vergül və ya yeni sətirlə ayırın"
-                    rows={2}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs leading-relaxed text-slate-800 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-                  />
-                  <p className="mt-1 text-[10.5px] text-slate-500">
-                    Tədbir mətnində <code className="rounded bg-slate-100 px-1">{"{guests}"}</code> yazsanız, qonaqlar
-                    sertifikata da düşəcək.
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                      Qonaqlar
+                    </label>
+                    <span className="text-[10px] font-bold tabular-nums text-slate-400">{draft.guests.length}/30</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      value={guestInput}
+                      onChange={(event) => setGuestInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") return;
+                        // Modal özü form içindədir — Enter xarici formu göndərməsin.
+                        event.preventDefault();
+                        addGuest();
+                      }}
+                      placeholder="Qonağın adını yazın"
+                      className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={addGuest}
+                      disabled={!guestInput.trim() || draft.guests.length >= 30}
+                      className="inline-flex h-[38px] shrink-0 items-center gap-1 rounded-xl bg-brand-600 px-3 text-[11px] font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Plus size={13} /> Əlavə et
+                    </button>
+                  </div>
+
+                  {draft.guests.length > 0 ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {draft.guests.map((guest, index) => (
+                        <li
+                          key={`guest-${index}`}
+                          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5"
+                        >
+                          <span className="text-[9.5px] font-bold tabular-nums text-slate-400">#{index + 1}</span>
+                          <input
+                            value={guest}
+                            onChange={(event) => updateGuest(index, event.target.value)}
+                            aria-label={`Qonaq ${index + 1}`}
+                            className="min-w-0 flex-1 bg-transparent text-[11.5px] text-slate-800 outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeGuest(index)}
+                            aria-label="Qonağı sil"
+                            className="rounded p-0.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                          >
+                            <X size={12} />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-slate-500">
+                      <Users size={11} /> Hələ qonaq əlavə edilməyib — adı yazıb “Əlavə et” düyməsini basın.
+                    </p>
+                  )}
+
+                  <p className="mt-1.5 text-[10.5px] leading-relaxed text-slate-500">
+                    İstənilən sayda qonaq əlavə edə bilərsiniz (maks. 30). Hər qonaq sertifikatda ayrı element kimi
+                    çıxır — <code className="rounded bg-slate-100 px-1">{"{guest1}"}</code>,{" "}
+                    <code className="rounded bg-slate-100 px-1">{"{guest2}"}</code>, … Redaktorda hər birini ayrıca
+                    sürüşdürə, ölçüsünü və rəngini dəyişə bilərsiniz.
                   </p>
                 </div>
 
@@ -988,8 +1084,8 @@ function CertificateEditor({
   const logoUrlsKeyRef = useRef("");
   const [logoStatus, setLogoStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
-  const element = draft.elements.find((item) => item.key === selected) || DEFAULT_ELEMENTS[selected];
-  const auto = AUTO_ELEMENTS.includes(selected);
+  const element = draft.elements.find((item) => item.key === selected) || defaultElement(selected);
+  const auto = isAutoElement(selected);
 
   const program = programFromDraft(draft);
 
@@ -1146,7 +1242,7 @@ function CertificateEditor({
                 : "border-slate-200 bg-white text-slate-600 hover:border-brand-200"
             } ${item.visible ? "" : "opacity-50"}`}
           >
-            {ELEMENT_LABELS[item.key]}
+            {elementLabel(item.key)}
             <span
               role="button"
               tabIndex={-1}
@@ -1164,10 +1260,10 @@ function CertificateEditor({
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[11.5px] font-bold text-slate-800">{ELEMENT_LABELS[selected]}</p>
+          <p className="text-[11.5px] font-bold text-slate-800">{elementLabel(selected)}</p>
           <button
             type="button"
-            onClick={() => onChangeElement(selected, { ...DEFAULT_ELEMENTS[selected] })}
+            onClick={() => onChangeElement(selected, { ...defaultElement(selected) })}
             className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[10px] font-semibold text-slate-500 hover:bg-white hover:text-slate-700"
             title="Standart vəziyyətə qaytar"
           >
@@ -1182,7 +1278,9 @@ function CertificateEditor({
             </label>
             {auto ? (
               <p className="rounded-lg border border-dashed border-slate-300 bg-white px-2.5 py-2 text-[10.5px] text-slate-500">
-                {selected === "name" ? "{name}" : "{code}"} — iştirakçı üçün avtomatik yazılır.
+                {isGuestKey(selected)
+                  ? `{guest${guestIndexFromKey(selected) + 1}} — qonaq adı avtomatik yazılır.`
+                  : `${selected === "name" ? "{name}" : "{code}"} — iştirakçı üçün avtomatik yazılır.`}
               </p>
             ) : (
               <textarea
@@ -1194,7 +1292,7 @@ function CertificateEditor({
             )}
             {!auto && (
               <p className="mt-1 text-[9.5px] text-slate-400">
-                Yer tutucular: {"{event}"} · {"{date}"} · {"{guests}"} · {"{name}"} · {"{code}"}
+                Yer tutucular: {"{event}"} · {"{date}"} · {"{guest1}"} · {"{guest2}"} · … · {"{name}"} · {"{code}"}
               </p>
             )}
           </div>

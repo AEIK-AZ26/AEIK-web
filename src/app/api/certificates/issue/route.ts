@@ -56,13 +56,25 @@ export async function POST(req: Request) {
       if (existing.status === 'revoked') {
         return NextResponse.json({ error: 'Bu ad üçün sertifikat ləğv edilib. Bizimlə əlaqə saxlayın.' }, { status: 403 });
       }
+      // Proqram redaktə olunubsa köhnə qeyd də yenilənir — yoxlama səhifəsi
+      // sertifikatda çap olunan tədbir/tarixlə eyni məlumatı göstərməlidir.
+      if (existing.event !== program.title || existing.date !== program.date) {
+        try {
+          await CertificateModel.updateOne(
+            { _id: existing._id },
+            { $set: { event: program.title, date: program.date } }
+          );
+        } catch (syncError) {
+          console.error('Certificate sync error:', syncError);
+        }
+      }
       return NextResponse.json({
         ok: true,
         certificate: {
           code: existing.code,
           name: existing.name,
-          event: existing.event,
-          date: existing.date,
+          event: program.title,
+          date: program.date,
           role: existing.role,
           status: existing.status,
         },
@@ -110,8 +122,8 @@ export async function POST(req: Request) {
             certificate: {
               code: duplicate.code,
               name: duplicate.name,
-              event: duplicate.event,
-              date: duplicate.date,
+              event: program.title,
+              date: program.date,
               role: duplicate.role,
               status: duplicate.status,
             },

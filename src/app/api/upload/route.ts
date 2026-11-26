@@ -45,6 +45,11 @@ export async function POST(req: Request) {
 
     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
       method: 'POST',
+      // imgbb Node/undici sorğularını bloklayır — brauzer User-Agent tələb olunur.
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+        Accept: 'application/json',
+      },
       body: payload,
       signal: AbortSignal.timeout(30_000),
     });

@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper";
 import { A11y, Keyboard, Navigation, Pagination } from "swiper/modules";
 import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarDays, Newspaper, Sparkles } from "lucide-react";
-import { FALLBACK_IMAGE, SiteItem, SiteSection, formatDate, isExpired, itemSlug } from "@/lib/siteContent";
+import { FALLBACK_IMAGE, SiteItem, SiteSection, excerpt, formatDate, isExpired, itemSlug } from "@/lib/siteContent";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -109,7 +109,7 @@ export function NewsCard({ item }: { item: SiteItem }) {
           {item.date ? formatDate(item.date) : "Xəbər"}
         </p>
         <h3 className="mt-2 text-[16px] font-extrabold leading-[1.3] tracking-[-0.02em] text-ink">{item.title}</h3>
-        {item.text && <p className="mt-2 line-clamp-3 text-[12px] leading-[1.7] text-[#5A5270]">{item.text}</p>}
+        {item.text && <p className="mt-2 text-[12px] leading-[1.7] text-[#5A5270]">{excerpt(item.text)}</p>}
         <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-[11px] font-bold text-brand-600">
           <Newspaper size={12} /> Oxu
           <ArrowUpRight size={12} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -139,7 +139,7 @@ export function ProjectCard({ item }: { item: SiteItem }) {
         <h3 className="text-[19px] font-extrabold leading-[1.18] tracking-[-0.025em] text-ink lg:text-[23px]">
           {item.title}
         </h3>
-        {item.text && <p className="mt-2.5 line-clamp-3 text-[12px] leading-[1.75] text-[#5A5270] lg:text-[12.5px]">{item.text}</p>}
+        {item.text && <p className="mt-2.5 text-[12px] leading-[1.75] text-[#5A5270] lg:text-[12.5px]">{excerpt(item.text)}</p>}
         {item.meta && <p className="mt-4 line-clamp-2 text-[11px] font-semibold leading-relaxed text-[#3E3171]">{item.meta}</p>}
 
         <div className="mt-auto flex items-center justify-between border-t border-[#F3F1FA] pt-4">

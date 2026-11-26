@@ -96,7 +96,7 @@ export default function Navbar() {
 
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? "px-2 pt-2 sm:px-4 sm:pt-3" : "border-b border-transparent bg-white/70 backdrop-blur-md"
+          scrolled ? "px-2 pt-2 sm:px-4 sm:pt-3" : "bg-transparent"
         }`}
       >
         <div
