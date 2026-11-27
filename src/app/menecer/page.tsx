@@ -33,10 +33,11 @@ import { loadContent } from "@/lib/contentApi";
 import ContentManager from "@/components/menecer/ContentManager";
 import FormManager from "@/components/menecer/FormManager";
 import CertificateManager from "@/components/menecer/CertificateManager";
+import TeamManager from "@/components/menecer/TeamManager";
 import { UserRole } from "@/types";
 import { shortName, initial } from "@/lib/userName";
 
-type Tab = "overview" | "form" | "certificates" | SiteSection;
+type Tab = "overview" | "form" | "certificates" | "team" | SiteSection;
 
 const NAV: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: "overview", label: "İcmal", icon: Gauge },
@@ -45,6 +46,7 @@ const NAV: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: "membership", label: "Üzvlük proqramı", icon: UserPlus },
   { key: "form", label: "Müraciət formu", icon: ClipboardList },
   { key: "certificates", label: "Sertifikatlar", icon: Award },
+  { key: "team", label: "Komanda", icon: Users },
   { key: "project", label: "Layihələr", icon: FolderGit2 },
   { key: "about", label: "Haqqımızda", icon: FileText },
   { key: "plan", label: "Fəaliyyət planı", icon: CalendarClock },
@@ -192,6 +194,8 @@ export default function MenecerPage() {
       ? "Müraciət formu"
       : tab === "certificates"
       ? "Sertifikatlar"
+      : tab === "team"
+      ? "Komanda"
       : SECTION_LABELS[tab as SiteSection];
 
   return (
@@ -299,7 +303,7 @@ export default function MenecerPage() {
               const count =
                 entry.key === "overview"
                   ? items.length
-                  : entry.key === "form" || entry.key === "certificates"
+                  : entry.key === "form" || entry.key === "certificates" || entry.key === "team"
                   ? null
                   : bySection[entry.key as SiteSection]?.length || 0;
               return (
@@ -371,6 +375,8 @@ export default function MenecerPage() {
             <FormManager notify={notify} />
           ) : tab === "certificates" ? (
             <CertificateManager notify={notify} />
+          ) : tab === "team" ? (
+            <TeamManager notify={notify} />
           ) : (
             <ContentManager
               section={tab}
